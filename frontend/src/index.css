@@ -1,0 +1,81 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Poppins', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-desi-gold hover:bg-yellow-600 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 shadow-md hover:shadow-lg;
+  }
+  
+  .btn-secondary {
+    @apply bg-desi-brown hover:bg-yellow-800 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300;
+  }
+  
+  .card {
+    @apply bg-white rounded-xl shadow-lg overflow-hidden transition-transform duration-300 hover:scale-105;
+  }
+  
+  .input-field {
+    @apply w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-desi-gold transition-colors;
+  }
+  
+  .section-title {
+    @apply text-3xl md:text-4xl font-bold text-desi-brown mb-4 text-center;
+  }
+  
+  .pattern-bg {
+    background-image: 
+      repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(212, 175, 55, 0.05) 35px, rgba(212, 175, 55, 0.05) 70px);
+  }
+
+    /* Carousel stacking */
+    .carousel-stack { position: relative; }
+    .carousel-stack img { display: block; width: 100%; height: auto; }
+    .carousel-stack img.absolute { position: absolute; top: 0; left: 0; }
+
+    /* Smooth carousel crossfade */
+    .carousel-container { position: relative; overflow: hidden; border-radius: 1rem; }
+    .carousel-slot {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0;
+      transform: scale(0.96);
+      transform-origin: center center;
+      /* slower fade + transform for a gentler effect */
+      transition: opacity 1400ms cubic-bezier(.22,.9,.32,1), transform 1400ms cubic-bezier(.22,.9,.32,1);
+      will-change: opacity, transform;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      pointer-events: none;
+      /* force GPU compositing */
+      -webkit-transform: translateZ(0);
+      transform: translateZ(0) scale(0.96);
+    }
+    .carousel-slot.active {
+      opacity: 1;
+      transform: translateZ(0) scale(1.06);
+      z-index: 2;
+      pointer-events: auto;
+    }
+    .carousel-slot.exiting {
+      opacity: 0;
+      transform: translateZ(0) scale(1.02);
+      z-index: 3; /* keep exiting on top while it fades */
+      transition: opacity 1400ms cubic-bezier(.22,.9,.32,1), transform 1400ms cubic-bezier(.22,.9,.32,1);
+    }
+}
