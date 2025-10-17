@@ -20,6 +20,7 @@ const Checkout = () => {
   });
 
   const [loading, setLoading] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState('razorpay');
 
   const subtotal = getCartTotal();
   const shipping = subtotal >= 500 ? 0 : 50;
@@ -33,6 +34,57 @@ const Checkout = () => {
     });
   };
 
+  const handleCOD = async () => {
+    try {
+      setLoading(true);
+
+      // Create order in database with COD payment method
+      const orderData = {
+        items: cartItems.map(item => ({
+          product: item._id,
+          name: item.name,
+          image: item.image,
+          quantity: item.quantity,
+          price: item.price,
+          weight: item.weight,
+        })),
+        shippingAddress: {
+          name: shippingInfo.name,
+          phone: shippingInfo.phone,
+          street: shippingInfo.street,
+          city: shippingInfo.city,
+          state: shippingInfo.state,
+          pincode: shippingInfo.pincode,
+        },
+        paymentInfo: {
+          method: 'cod',
+          razorpayOrderId: null,
+          razorpayPaymentId: null,
+          razorpaySignature: null,
+        },
+        itemsPrice: subtotal,
+        shippingPrice: shipping,
+        taxPrice: tax,
+        totalPrice: total,
+      };
+
+      try {
+        const order = await createOrder(orderData);
+
+        // Clear cart and redirect
+        clearCart();
+        toast.success('Order placed successfully! You can pay at delivery. 🎉');
+        navigate(`/order/${order._id}`);
+      } catch (error) {
+        console.error('Order creation error:', error.response?.data?.message || error.message);
+        toast.error(error.response?.data?.message || 'Order creation failed. Please try again.');
+        throw error;
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handlePayment = async (e) => {
     e.preventDefault();
     
@@ -40,6 +92,11 @@ const Checkout = () => {
     if (!shippingInfo.name || !shippingInfo.phone || !shippingInfo.street || 
         !shippingInfo.city || !shippingInfo.state || !shippingInfo.pincode) {
       toast.error('Please fill all shipping details');
+      return;
+    }
+
+    if (paymentMethod === 'cod') {
+      handleCOD();
       return;
     }
 
@@ -314,6 +371,42 @@ const Checkout = () => {
                 </div>
               </div>
 
+              {/* Payment Method Selection */}
+              <div className="mt-8">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Payment Method</h3>
+                <div className="space-y-4">
+                  <label className="flex items-center space-x-3 p-4 border rounded-lg cursor-pointer hover:bg-gray-50">
+                    <input
+                      type="radio"
+                      name="paymentMethod"
+                      value="razorpay"
+                      checked={paymentMethod === 'razorpay'}
+                      onChange={(e) => setPaymentMethod(e.target.value)}
+                      className="h-4 w-4 text-desi-brown focus:ring-desi-brown"
+                    />
+                    <div>
+                      <p className="font-medium">Online Payment</p>
+                      <p className="text-sm text-gray-500">Pay securely with UPI, Card, or Net Banking</p>
+                    </div>
+                  </label>
+
+                  <label className="flex items-center space-x-3 p-4 border rounded-lg cursor-pointer hover:bg-gray-50">
+                    <input
+                      type="radio"
+                      name="paymentMethod"
+                      value="cod"
+                      checked={paymentMethod === 'cod'}
+                      onChange={(e) => setPaymentMethod(e.target.value)}
+                      className="h-4 w-4 text-desi-brown focus:ring-desi-brown"
+                    />
+                    <div>
+                      <p className="font-medium">Cash on Delivery</p>
+                      <p className="text-sm text-gray-500">Pay with cash when your order arrives</p>
+                    </div>
+                  </label>
+                </div>
+              </div>
+
               <button
                 type="submit"
                 disabled={loading}
@@ -325,7 +418,9 @@ const Checkout = () => {
                     Processing...
                   </>
                 ) : (
-                  <>Pay ₹{total.toFixed(2)}</>
+                  <>
+                    {paymentMethod === 'cod' ? 'Place Order - Cash on Delivery' : `Pay ₹${total.toFixed(2)}`}
+                  </>
                 )}
               </button>
             </form>

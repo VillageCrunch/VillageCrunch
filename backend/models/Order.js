@@ -43,7 +43,11 @@ const orderSchema = new mongoose.Schema({
     razorpayOrderId: String,
     razorpayPaymentId: String,
     razorpaySignature: String,
-    method: String,
+    method: {
+      type: String,
+      enum: ['razorpay', 'cod'],
+      required: true
+    },
   },
   itemsPrice: {
     type: Number,
@@ -67,6 +71,10 @@ const orderSchema = new mongoose.Schema({
     type: String,
     enum: ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'],
     default: 'pending',
+  },
+  codVerified: {
+    type: Boolean,
+    default: false
   },
   isPaid: {
     type: Boolean,

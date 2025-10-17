@@ -30,7 +30,7 @@ router.post('/', protect, async (req, res) => {
       return res.status(400).json({ message: 'No order items' });
     }
 
-    const order = await Order.create({
+    const orderData = {
       user: req.user._id,
       orderNumber: generateOrderNumber(),
       items,
@@ -40,7 +40,16 @@ router.post('/', protect, async (req, res) => {
       shippingPrice,
       taxPrice,
       totalPrice,
-    });
+    };
+
+    // Handle COD orders
+    if (paymentInfo.method === 'cod') {
+      orderData.status = 'confirmed';
+      orderData.isPaid = false;
+      orderData.codVerified = false;
+    }
+
+    const order = await Order.create(orderData);
 
     res.status(201).json(order);
   } catch (error) {

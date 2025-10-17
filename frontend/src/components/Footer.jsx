@@ -14,9 +14,15 @@ const Footer = () => {
               Bringing authentic Indian flavors to your doorstep.
             </p>
             <div className="flex space-x-4">
-              <Facebook className="w-5 h-5 hover:text-desi-gold cursor-pointer transition" />
-              <Instagram className="w-5 h-5 hover:text-desi-gold cursor-pointer transition" />
-              <Twitter className="w-5 h-5 hover:text-desi-gold cursor-pointer transition" />
+              <a href="https://facebook.com/villagecrunch" target="_blank" rel="noopener noreferrer">
+                <Facebook className="w-5 h-5 hover:text-desi-gold cursor-pointer transition" />
+              </a>
+              <a href="https://www.instagram.com/village_crunch/" target="_blank" rel="noopener noreferrer">
+                <Instagram className="w-5 h-5 hover:text-desi-gold cursor-pointer transition" />
+              </a>
+              <a href="https://twitter.com/villagecrunch" target="_blank" rel="noopener noreferrer">
+                <Twitter className="w-5 h-5 hover:text-desi-gold cursor-pointer transition" />
+              </a>
             </div>
           </div>
 
