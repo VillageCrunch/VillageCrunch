@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Search } from 'lucide-react';
 import ProductCard from '../components/ProductCard';
-import productsData from '../products.json';
+import { getProducts } from '../utils/api'; // <-- import API function
 
 const Products = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -11,19 +11,26 @@ const Products = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState(searchParams.get('category') || 'all');
 
+  // Fetch products from API
   useEffect(() => {
-    setLoading(true);
-    let filteredProducts = [...productsData];
-    
-    if (selectedCategory !== 'all') {
-      filteredProducts = filteredProducts.filter(
-        product => product.category === selectedCategory
-      );
-    }
-    
-    setProducts(filteredProducts);
-    setLoading(false);
-  }, [selectedCategory]);
+    const fetchProducts = async () => {
+      setLoading(true);
+      try {
+        const params = {};
+        if (selectedCategory !== 'all') params.category = selectedCategory;
+        if (searchTerm.trim()) params.search = searchTerm;
+
+        const data = await getProducts(params);
+        setProducts(data);
+      } catch (error) {
+        console.error('Error fetching products:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, [selectedCategory, searchTerm]);
 
   const handleCategoryChange = (category) => {
     setSelectedCategory(category);
@@ -36,25 +43,8 @@ const Products = () => {
 
   const handleSearch = (e) => {
     e.preventDefault();
-    let filteredProducts = [...productsData];
-    
-    if (searchTerm.trim()) {
-      filteredProducts = filteredProducts.filter(product => 
-        product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.description.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-    
-    if (selectedCategory !== 'all') {
-      filteredProducts = filteredProducts.filter(
-        product => product.category === selectedCategory
-      );
-    }
-    
-    setProducts(filteredProducts);
+    // just updating searchTerm triggers useEffect
   };
-
-  const filteredProducts = products;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -74,14 +64,12 @@ const Products = () => {
           <div className="lg:w-64 flex-shrink-0">
             <div className="bg-white rounded-xl shadow-md p-6 sticky top-24">
               <h3 className="font-bold text-lg mb-4 text-desi-brown">Categories</h3>
-              
               <div className="space-y-2">
                 {[
                   { id: 'all', label: 'All Products' },
                   { id: 'dry-fruits', label: 'Dry Fruits' },
                   { id: 'makhana', label: 'Makhana' },
                   { id: 'thekua', label: 'Thekua' },
-                  ,
                 ].map((category) => (
                   <button
                     key={category.id}
@@ -134,13 +122,13 @@ const Products = () => {
                   </div>
                 ))}
               </div>
-            ) : filteredProducts.length > 0 ? (
+            ) : products.length > 0 ? (
               <>
                 <div className="mb-6 text-gray-600">
-                  Showing {filteredProducts.length} product{filteredProducts.length !== 1 ? 's' : ''}
+                  Showing {products.length} product{products.length !== 1 ? 's' : ''}
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {filteredProducts.map((product) => (
+                  {products.map((product) => (
                     <ProductCard key={product._id} product={product} />
                   ))}
                 </div>

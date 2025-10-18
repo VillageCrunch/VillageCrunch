@@ -2,7 +2,7 @@ import { useState, useEffect,useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Star, Heart, Award, Truck } from 'lucide-react';
 import ProductCard from '../components/ProductCard';
-import { getProducts } from '../utils/api';
+import { getProducts } from '../utils/api.js';
 
 const Home = () => {
   const [featuredProducts, setFeaturedProducts] = useState([]);

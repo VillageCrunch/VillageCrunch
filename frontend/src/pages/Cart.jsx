@@ -47,7 +47,7 @@ const Cart = () => {
             <div className="bg-white rounded-xl shadow-md overflow-hidden">
               {cartItems.map((item) => (
                 <div
-                  key={item._id}
+                  key={item.cartItemId}
                   className="flex items-center p-6 border-b last:border-b-0 hover:bg-gray-50 transition"
                 >
                   <Link to={`/product/${item._id}`} className="flex-shrink-0">
@@ -75,7 +75,7 @@ const Cart = () => {
                     {/* Quantity Controls */}
                     <div className="flex items-center space-x-2 bg-gray-100 rounded-lg p-1">
                       <button
-                        onClick={() => updateQuantity(item._id, item.quantity - 1)}
+                        onClick={() => updateQuantity(item.cartItemId, item.quantity - 1)}
                         className="p-1 hover:bg-gray-200 rounded transition"
                         disabled={item.quantity <= 1}
                       >
@@ -85,7 +85,7 @@ const Cart = () => {
                         {item.quantity}
                       </span>
                       <button
-                        onClick={() => updateQuantity(item._id, item.quantity + 1)}
+                        onClick={() => updateQuantity(item.cartItemId, item.quantity + 1)}
                         className="p-1 hover:bg-gray-200 rounded transition"
                         disabled={item.quantity >= item.stock}
                       >
@@ -100,7 +100,7 @@ const Cart = () => {
 
                     {/* Remove Button */}
                     <button
-                      onClick={() => removeFromCart(item._id)}
+                      onClick={() => removeFromCart(item.cartItemId)}
                       className="text-red-500 hover:text-red-700 transition p-2"
                     >
                       <Trash2 className="w-5 h-5" />

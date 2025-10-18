@@ -41,7 +41,7 @@ const Checkout = () => {
       // Create order in database with COD payment method
       const orderData = {
         items: cartItems.map(item => ({
-          product: item._id,
+          product: item._id,    
           name: item.name,
           image: item.image,
           quantity: item.quantity,
@@ -67,6 +67,10 @@ const Checkout = () => {
         taxPrice: tax,
         totalPrice: total,
       };
+
+      console.log('Cart items structure:', cartItems);
+      console.log('First item:', cartItems[0]);
+      console.log('First item _id:', cartItems[0]?._id);
 
       try {
         const order = await createOrder(orderData);

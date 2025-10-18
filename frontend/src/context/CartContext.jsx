@@ -27,33 +27,30 @@ export const CartProvider = ({ children }) => {
 
   const addToCart = (product, quantity = 1) => {
     setCartItems(prev => {
-      const existingItem = prev.find(item => item._id === product._id);
-      
-      if (existingItem) {
-        toast.success('Updated cart quantity');
-        return prev.map(item =>
-          item._id === product._id
-            ? { ...item, quantity: item.quantity + quantity }
-            : item
-        );
-      }
+      // Instead of finding exact match, generate a unique ID for each cart item
+      const timestamp = new Date().getTime();
+      const newItem = {
+        ...product,
+        cartItemId: `${product._id}_${timestamp}`, // Add unique identifier
+        quantity
+      };
       
       toast.success('Added to cart');
-      return [...prev, { ...product, quantity }];
+      return [...prev, newItem];
     });
   };
 
-  const removeFromCart = (productId) => {
-    setCartItems(prev => prev.filter(item => item._id !== productId));
+  const removeFromCart = (cartItemId) => {
+    setCartItems(prev => prev.filter(item => item.cartItemId !== cartItemId));
     toast.success('Removed from cart');
   };
 
-  const updateQuantity = (productId, quantity) => {
+  const updateQuantity = (cartItemId, quantity) => {
     if (quantity < 1) return;
     
     setCartItems(prev =>
       prev.map(item =>
-        item._id === productId ? { ...item, quantity } : item
+        item.cartItemId === cartItemId ? { ...item, quantity } : item
       )
     );
   };
