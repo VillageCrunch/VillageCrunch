@@ -8,14 +8,6 @@ const userSchema = new mongoose.Schema(
       required: [true, 'Name is required'],
       trim: true,
     },
-    username: {
-      type: String,
-      required: [true, 'Username is required'],
-      unique: true,
-      lowercase: true,
-      trim: true,
-      minlength: 3,
-    },
     email: {
       type: String,
       required: [true, 'Email is required'],
@@ -46,6 +38,8 @@ const userSchema = new mongoose.Schema(
       enum: ['user', 'admin'],
       default: 'user',
     },
+    resetPasswordToken: String,
+    resetPasswordExpire: Date,
     orders: [
       {
         type: mongoose.Schema.Types.ObjectId,

@@ -8,7 +8,7 @@ const Login = () => {
   const redirect = searchParams.get('redirect') || '/';
   
   const [formData, setFormData] = useState({
-    username: '',
+    emailOrPhone: '',
     password: '',
   });
   const [loading, setLoading] = useState(false);
@@ -28,7 +28,7 @@ const Login = () => {
     setLoading(true);
 
     try {
-      await login(formData.username, formData.password);
+      await login(formData.emailOrPhone, formData.password);
       toast.success('Logged in successfully!');
       navigate(redirect);
     } catch (error) {
@@ -50,18 +50,21 @@ const Login = () => {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Username
+                Email or Phone Number
               </label>
               <input
                 type="text"
-                name="username"
-                value={formData.username}
+                name="emailOrPhone"
+                value={formData.emailOrPhone}
                 onChange={handleChange}
                 required
                 className="input-field"
-                placeholder="Enter your username"
-                autoComplete="username"
+                placeholder="Enter your email or phone number"
+                autoComplete="email"
               />
+              <p className="text-xs text-gray-500 mt-1">
+                You can login with either your email address or phone number
+              </p>
             </div>
 
             <div>

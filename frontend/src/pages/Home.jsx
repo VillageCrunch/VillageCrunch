@@ -1,11 +1,14 @@
-import { useState, useEffect,useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Star, Heart, Award, Truck } from 'lucide-react';
+import { ArrowRight, Star, Heart, Award, Truck, ChevronLeft, ChevronRight } from 'lucide-react';
 import ProductCard from '../components/ProductCard';
 import { getProducts } from '../utils/api.js';
 
 const Home = () => {
   const [featuredProducts, setFeaturedProducts] = useState([]);
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const touchStartX = useRef(0);
+  const touchEndX = useRef(0);
 
   // Simple inline Carousel component
   const Carousel = () => {
@@ -63,6 +66,53 @@ const Home = () => {
       </div>
     );
   };
+
+  // Carousel functions for mobile
+  const nextSlide = () => {
+    setCurrentSlide((prev) => 
+      prev >= featuredProducts.length - 1 ? 0 : prev + 1
+    );
+  };
+
+  const prevSlide = () => {
+    setCurrentSlide((prev) => 
+      prev <= 0 ? featuredProducts.length - 1 : prev - 1
+    );
+  };
+
+  // Touch handlers for mobile swipe
+  const handleTouchStart = (e) => {
+    touchStartX.current = e.targetTouches[0].clientX;
+  };
+
+  const handleTouchMove = (e) => {
+    touchEndX.current = e.targetTouches[0].clientX;
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStartX.current || !touchEndX.current) return;
+    
+    const distance = touchStartX.current - touchEndX.current;
+    const isLeftSwipe = distance > 50;
+    const isRightSwipe = distance < -50;
+
+    if (isLeftSwipe) {
+      nextSlide();
+    } else if (isRightSwipe) {
+      prevSlide();
+    }
+  };
+
+  // Auto-advance carousel on mobile
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (window.innerWidth < 768 && featuredProducts.length > 0) {
+        nextSlide();
+      }
+    }, 4000);
+
+    return () => clearInterval(interval);
+  }, [featuredProducts.length]);
 
   useEffect(() => {
     const fetchFeaturedProducts = async () => {
@@ -192,10 +242,70 @@ const Home = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+          {/* Desktop Grid Layout (hidden on mobile) */}
+          <div className="hidden md:grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             {featuredProducts.map(product => (
               <ProductCard key={product._id} product={product} />
             ))}
+          </div>
+
+          {/* Mobile Carousel Layout (hidden on desktop) */}
+          <div className="md:hidden relative">
+            <div 
+              className="overflow-hidden"
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
+            >
+              <div 
+                className="flex transition-transform duration-300 ease-in-out"
+                style={{ transform: `translateX(-${currentSlide * 100}%)` }}
+              >
+                {featuredProducts.map(product => (
+                  <div key={product._id} className="w-full flex-shrink-0 px-4">
+                    <ProductCard product={product} />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Navigation Arrows */}
+            {featuredProducts.length > 1 && (
+              <>
+                <button
+                  onClick={prevSlide}
+                  className="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full p-2 shadow-lg hover:bg-gray-50 transition"
+                  aria-label="Previous product"
+                >
+                  <ChevronLeft className="w-5 h-5 text-desi-brown" />
+                </button>
+                <button
+                  onClick={nextSlide}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full p-2 shadow-lg hover:bg-gray-50 transition"
+                  aria-label="Next product"
+                >
+                  <ChevronRight className="w-5 h-5 text-desi-brown" />
+                </button>
+              </>
+            )}
+
+            {/* Dots Indicator */}
+            {featuredProducts.length > 1 && (
+              <div className="flex justify-center mt-6 space-x-2">
+                {featuredProducts.map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setCurrentSlide(index)}
+                    className={`w-2 h-2 rounded-full transition ${
+                      index === currentSlide 
+                        ? 'bg-desi-gold' 
+                        : 'bg-gray-300 hover:bg-gray-400'
+                    }`}
+                    aria-label={`Go to slide ${index + 1}`}
+                  />
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="text-center mt-12">

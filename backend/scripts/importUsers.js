@@ -5,7 +5,6 @@ const User = require('../models/User');
 const users = [
   {
     name: 'Admin User',
-    username: 'admin',
     email: 'admin@villagecrunch.com',
     password: 'admin123',
     phone: '9876543210',
@@ -20,7 +19,6 @@ const users = [
   },
   {
     name: 'John Doe',
-    username: 'johndoe',
     email: 'john@example.com',
     password: 'john123',
     phone: '9876543211',
@@ -34,7 +32,6 @@ const users = [
   },
   {
     name: 'Jane Smith',
-    username: 'janesmith',
     email: 'jane@example.com',
     password: 'jane123',
     phone: '9876543212',

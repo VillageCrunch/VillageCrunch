@@ -1,8 +1,9 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { createOrder, createPaymentOrder, verifyPayment, updateOrderToPaid } from '../utils/api';
+import { MapPin, Plus, CheckCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const Checkout = () => {
@@ -19,8 +20,34 @@ const Checkout = () => {
     pincode: '',
   });
 
+  const [selectedAddress, setSelectedAddress] = useState(null);
+  const [useNewAddress, setUseNewAddress] = useState(false);
+  const [addresses, setAddresses] = useState([]);
+
   const [loading, setLoading] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState('razorpay');
+
+  // Initialize addresses and default address selection
+  useEffect(() => {
+    if (user?.addresses && user.addresses.length > 0) {
+      setAddresses(user.addresses);
+      const defaultAddressIndex = user.addresses.findIndex(addr => addr.isDefault);
+      if (defaultAddressIndex !== -1 && !useNewAddress) {
+        const defaultAddress = user.addresses[defaultAddressIndex];
+        setSelectedAddress(defaultAddressIndex);
+        setShippingInfo({
+          name: user.name || '',
+          phone: user.phone || '',
+          street: defaultAddress.street,
+          city: defaultAddress.city,
+          state: defaultAddress.state,
+          pincode: defaultAddress.pincode,
+        });
+      }
+    } else {
+      setUseNewAddress(true);
+    }
+  }, [user, useNewAddress]);
 
   const subtotal = getCartTotal();
   const shipping = subtotal >= 500 ? 0 : 50;
@@ -31,6 +58,32 @@ const Checkout = () => {
     setShippingInfo({
       ...shippingInfo,
       [e.target.name]: e.target.value,
+    });
+  };
+
+  const handleAddressSelect = (address, index) => {
+    setSelectedAddress(index);
+    setUseNewAddress(false);
+    setShippingInfo({
+      name: user.name || '',
+      phone: user.phone || '',
+      street: address.street,
+      city: address.city,
+      state: address.state,
+      pincode: address.pincode,
+    });
+  };
+
+  const handleNewAddress = () => {
+    setSelectedAddress(null);
+    setUseNewAddress(true);
+    setShippingInfo({
+      name: user?.name || '',
+      phone: user?.phone || '',
+      street: '',
+      city: '',
+      state: '',
+      pincode: '',
     });
   };
 
@@ -285,8 +338,100 @@ const Checkout = () => {
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Shipping Form */}
           <div className="lg:col-span-2">
+            <div className="bg-white rounded-xl shadow-md p-8 mb-6">
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">Delivery Address</h2>
+
+              {/* Address Selection */}
+              {addresses.length > 0 && (
+                <div className="mb-8">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Choose Delivery Address</h3>
+                  <div className="space-y-3">
+                    {addresses.map((address, index) => (
+                      <div
+                        key={address._id || index}
+                        onClick={() => handleAddressSelect(address, index)}
+                        className={`p-4 border-2 rounded-lg cursor-pointer transition ${
+                          selectedAddress === index
+                            ? 'border-desi-gold bg-desi-cream/30'
+                            : 'border-gray-200 hover:border-desi-cream'
+                        }`}
+                      >
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center space-x-2 mb-2">
+                              <MapPin className="w-4 h-4 text-desi-brown" />
+                              {address.isDefault && (
+                                <span className="bg-desi-gold text-white text-xs px-2 py-1 rounded-full font-medium">
+                                  Default
+                                </span>
+                              )}
+                            </div>
+                            <p className="font-medium text-gray-900">{address.street}</p>
+                            <p className="text-gray-600 text-sm">
+                              {address.city}, {address.state} - {address.pincode}
+                            </p>
+                          </div>
+                          {selectedAddress === index && (
+                            <CheckCircle className="w-5 h-5 text-desi-gold" />
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                    
+                    {/* Add New Address Option */}
+                    <div
+                      onClick={handleNewAddress}
+                      className={`p-4 border-2 border-dashed rounded-lg cursor-pointer transition ${
+                        useNewAddress
+                          ? 'border-desi-gold bg-desi-cream/30'
+                          : 'border-gray-300 hover:border-desi-gold'
+                      }`}
+                    >
+                      <div className="flex items-center justify-center space-x-2 text-desi-brown">
+                        <Plus className="w-5 h-5" />
+                        <span className="font-medium">Use New Address</span>
+                        {useNewAddress && <CheckCircle className="w-5 h-5 text-desi-gold" />}
+                      </div>
+                    </div>
+                  </div>
+
+                  {addresses.length === 0 && (
+                    <div className="text-center py-6">
+                      <p className="text-gray-600 mb-4">No saved addresses found.</p>
+                      <Link
+                        to="/profile"
+                        className="text-desi-gold hover:text-yellow-600 font-medium"
+                      >
+                        Add addresses in your profile
+                      </Link>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Address Form */}
+              {(useNewAddress || addresses.length === 0) && (
+                <>
+                  <div className="flex items-center justify-between mb-6">
+                    <h3 className="text-lg font-semibold text-gray-900">
+                      {addresses.length > 0 ? 'New Address Details' : 'Shipping Information'}
+                    </h3>
+                    {addresses.length > 0 && (
+                      <Link
+                        to="/profile"
+                        className="text-sm text-desi-gold hover:text-yellow-600 font-medium"
+                      >
+                        Manage addresses in profile
+                      </Link>
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* Contact and Address Form */}
             <form onSubmit={handlePayment} className="bg-white rounded-xl shadow-md p-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">Shipping Information</h2>
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">Contact Information</h2>
 
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
@@ -300,6 +445,7 @@ const Checkout = () => {
                     onChange={handleChange}
                     required
                     className="input-field"
+                    readOnly={!useNewAddress && selectedAddress !== null}
                   />
                 </div>
 
@@ -314,65 +460,82 @@ const Checkout = () => {
                     onChange={handleChange}
                     required
                     className="input-field"
+                    readOnly={!useNewAddress && selectedAddress !== null}
                   />
                 </div>
 
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Street Address *
-                  </label>
-                  <input
-                    type="text"
-                    name="street"
-                    value={shippingInfo.street}
-                    onChange={handleChange}
-                    required
-                    className="input-field"
-                  />
-                </div>
+                {(useNewAddress || addresses.length === 0) && (
+                  <>
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Street Address *
+                      </label>
+                      <input
+                        type="text"
+                        name="street"
+                        value={shippingInfo.street}
+                        onChange={handleChange}
+                        required
+                        className="input-field"
+                        placeholder="House/Flat No., Street Name"
+                      />
+                    </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    City *
-                  </label>
-                  <input
-                    type="text"
-                    name="city"
-                    value={shippingInfo.city}
-                    onChange={handleChange}
-                    required
-                    className="input-field"
-                  />
-                </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        City *
+                      </label>
+                      <input
+                        type="text"
+                        name="city"
+                        value={shippingInfo.city}
+                        onChange={handleChange}
+                        required
+                        className="input-field"
+                      />
+                    </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    State *
-                  </label>
-                  <input
-                    type="text"
-                    name="state"
-                    value={shippingInfo.state}
-                    onChange={handleChange}
-                    required
-                    className="input-field"
-                  />
-                </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        State *
+                      </label>
+                      <input
+                        type="text"
+                        name="state"
+                        value={shippingInfo.state}
+                        onChange={handleChange}
+                        required
+                        className="input-field"
+                      />
+                    </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    PIN Code *
-                  </label>
-                  <input
-                    type="text"
-                    name="pincode"
-                    value={shippingInfo.pincode}
-                    onChange={handleChange}
-                    required
-                    pattern="[0-9]{6}"
-                    className="input-field"
-                  />
-                </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        PIN Code *
+                      </label>
+                      <input
+                        type="text"
+                        name="pincode"
+                        value={shippingInfo.pincode}
+                        onChange={handleChange}
+                        required
+                        className="input-field"
+                      />
+                    </div>
+                  </>
+                )}
+
+                {selectedAddress !== null && !useNewAddress && (
+                  <div className="md:col-span-2">
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                      <h4 className="font-medium text-gray-900 mb-2">Selected Address:</h4>
+                      <p className="text-gray-700">
+                        {shippingInfo.street}<br />
+                        {shippingInfo.city}, {shippingInfo.state} - {shippingInfo.pincode}
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Payment Method Selection */}

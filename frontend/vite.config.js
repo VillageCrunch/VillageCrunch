@@ -12,7 +12,7 @@ export default defineConfig({
     ],
     proxy: {
       '/api': {
-        target: 'https://villagecrunch-1.onrender.com',
+        target: 'http://localhost:5000',
         changeOrigin: true,
       }
     }

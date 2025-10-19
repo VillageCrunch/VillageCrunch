@@ -11,8 +11,14 @@ import Cart from './pages/Cart';
 import Checkout from './pages/Checkout';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 import Orders from './pages/Orders';
+import Profile from './pages/Profile';
 import About from './pages/About';
+import ContactUs from './pages/ContactUs';
+import ShippingPolicy from './pages/ShippingPolicy';
+import ReturnsPolicy from './pages/ReturnsPolicy';
 import Admin from './pages/Admin';
 import ProtectedRoute from './components/ProtectedRoute';
 import OrdersDetail from './pages/OrderDeatail';
@@ -26,7 +32,7 @@ function App() {
             <Navbar />
             <main className="flex-grow">
               <Routes>
-                <Route path="/Admin" element={<ProtectedRoute>
+                <Route path="/admin" element={<ProtectedRoute adminOnly={true}>
                   <Admin />
                 </ProtectedRoute>} />
                 <Route path="/" element={<Home />} />
@@ -36,9 +42,15 @@ function App() {
                 <Route path="/checkout" element={<Checkout />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
+                <Route path="/reset-password/:resettoken" element={<ResetPassword />} />
                 <Route path="/orders" element={<Orders />} />
                 <Route path="/order/:id" element={<OrdersDetail />} />
+                <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
                 <Route path="/about" element={<About />} />
+                <Route path="/contact" element={<ContactUs />} />
+                <Route path="/shipping-policy" element={<ShippingPolicy />} />
+                <Route path="/returns-policy" element={<ReturnsPolicy />} />
               </Routes>
             </main>
             <Footer />

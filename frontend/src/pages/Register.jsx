@@ -9,7 +9,6 @@ const Register = () => {
   
   const [formData, setFormData] = useState({
     name: '',
-    username: '',
     email: '',
     phone: '',
     password: '',
@@ -40,17 +39,11 @@ const Register = () => {
       return;
     }
 
-    if (formData.username.length < 3) {
-      toast.error('Username must be at least 3 characters');
-      return;
-    }
-
     setLoading(true);
 
     try {
       await register({
         name: formData.name,
-        username: formData.username,
         email: formData.email,
         phone: formData.phone,
         password: formData.password,
@@ -87,24 +80,6 @@ const Register = () => {
                 className="input-field"
                 placeholder="John Doe"
               />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Username <span className="text-xs text-gray-500">(used for login)</span>
-              </label>
-              <input
-                type="text"
-                name="username"
-                value={formData.username}
-                onChange={handleChange}
-                required
-                minLength={3}
-                className="input-field"
-                placeholder="johndoe"
-                autoComplete="username"
-              />
-              <p className="text-xs text-gray-500 mt-1">Minimum 3 characters, will be converted to lowercase</p>
             </div>
 
             <div>
