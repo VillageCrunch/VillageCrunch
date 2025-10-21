@@ -2,7 +2,6 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
-const rateLimit = require('express-rate-limit');
 const path = require('path');
 const connectDB = require('./config/db');
 
@@ -12,7 +11,7 @@ const app = express();
 // Connect to MongoDB
 connectDB();
 
-// Middleware
+// --- Middleware ---
 app.use(helmet());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -21,23 +20,13 @@ app.use(express.urlencoded({ extended: true }));
 app.use(
   cors({
     origin: [
-      'http://localhost:5173',
-      'https://villagecrunch.me', // ✅ your production domain
+      'http://localhost:5173',       // local dev
+      'https://villagecrunch.me',    // production domain
       process.env.FRONTEND_URL,
     ].filter(Boolean),
     credentials: true,
   })
 );
-
-// --- Rate Limiting ---
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 1000,
-  message: 'Too many requests from this IP, please try again later.',
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-app.use('/api/', limiter);
 
 // --- API Routes ---
 app.use('/api/auth', require('./routes/auth'));
@@ -57,11 +46,12 @@ app.get('/api/health', (req, res) => {
 
 // --- Serve Frontend Build (React) ---
 const __dirnameFull = path.resolve();
-app.use(express.static(path.join(__dirnameFull, 'frontend', 'dist')));
+app.use(express.static(path.join(__dirnameFull, '../frontend/dist'))); 
+// Note: Adjust path if your frontend is not sibling to backend
 
 // --- React Router Fallback (Prevents 404 on reload) ---
 app.get('*', (req, res) => {
-  res.sendFile(path.resolve(__dirnameFull, 'frontend', 'dist', 'index.html'));
+  res.sendFile(path.resolve(__dirnameFull, '../frontend/dist/index.html'));
 });
 
 // --- Error Handling Middleware ---
@@ -74,7 +64,7 @@ app.use((err, req, res, next) => {
 });
 
 // --- Start Server ---
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 8080; // DO App Platform typically exposes 8080
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT} in ${process.env.NODE_ENV} mode`);
 });
