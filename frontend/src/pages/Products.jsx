@@ -2,14 +2,31 @@ import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Search } from 'lucide-react';
 import ProductCard from '../components/ProductCard';
-import { getProducts } from '../utils/api'; // <-- import API function
+import { getProducts, getAllProducts } from '../utils/api'; // <-- import API functions
 
 const Products = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState(searchParams.get('category') || 'all');
+
+  // Fetch all products to extract categories
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const data = await getAllProducts();
+        const allProducts = data.products || data || [];
+        const uniqueCategories = [...new Set(allProducts.map(product => product.category).filter(Boolean))];
+        setCategories(uniqueCategories.sort());
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+      }
+    };
+
+    fetchCategories();
+  }, []);
 
   // Fetch products from API
   useEffect(() => {
@@ -65,22 +82,27 @@ const Products = () => {
             <div className="bg-white rounded-xl shadow-md p-6 sticky top-24">
               <h3 className="font-bold text-lg mb-4 text-desi-brown">Categories</h3>
               <div className="space-y-2">
-                {[
-                  { id: 'all', label: 'All Products' },
-                  { id: 'dry-fruits', label: 'Dry Fruits' },
-                  { id: 'makhana', label: 'Makhana' },
-                  { id: 'thekua', label: 'Thekua' },
-                ].map((category) => (
+                <button
+                  onClick={() => handleCategoryChange('all')}
+                  className={`w-full text-left px-4 py-2 rounded-lg transition ${
+                    selectedCategory === 'all'
+                      ? 'bg-desi-gold text-white'
+                      : 'hover:bg-desi-cream'
+                  }`}
+                >
+                  All Products
+                </button>
+                {categories.map((category) => (
                   <button
-                    key={category.id}
-                    onClick={() => handleCategoryChange(category.id)}
-                    className={`w-full text-left px-4 py-2 rounded-lg transition ${
-                      selectedCategory === category.id
+                    key={category}
+                    onClick={() => handleCategoryChange(category)}
+                    className={`w-full text-left px-4 py-2 rounded-lg transition capitalize ${
+                      selectedCategory === category
                         ? 'bg-desi-gold text-white'
                         : 'hover:bg-desi-cream'
                     }`}
                   >
-                    {category.label}
+                    {category.replace('-', ' ')}
                   </button>
                 ))}
               </div>

@@ -1,17 +1,67 @@
 import { Link } from 'react-router-dom';
 import { ShoppingCart, Star } from 'lucide-react';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
+import { useState } from 'react';
+import { createReview } from '../utils/api';
+import toast from 'react-hot-toast';
 
-const ProductCard = ({ product }) => {
+const ProductCard = ({ product, showQuickRating = false, userCanRate = false, onRatingSubmit }) => {
   const { addToCart } = useCart();
+  const { user } = useAuth();
+  const [hoveredRating, setHoveredRating] = useState(0);
+  const [isSubmittingRating, setIsSubmittingRating] = useState(false);
 
   const handleAddToCart = (e) => {
     e.preventDefault();
     addToCart(product);
   };
 
+  const handleQuickRating = async (e, rating) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (!user) {
+      toast.error('Please login to rate products');
+      return;
+    }
+
+    if (!userCanRate) {
+      toast.error('You can only rate products you have purchased and received');
+      return;
+    }
+
+    setIsSubmittingRating(true);
+    try {
+      await createReview(product._id, {
+        rating,
+        comment: `Quick rating: ${rating} star${rating !== 1 ? 's' : ''}`
+      });
+      toast.success('Thank you for your rating!');
+      if (onRatingSubmit) onRatingSubmit();
+    } catch (error) {
+      toast.error('Failed to submit rating');
+    } finally {
+      setIsSubmittingRating(false);
+      setHoveredRating(0);
+    }
+  };
+
+  // Calculate average rating from actual reviews
+  const calculateAverageRating = (reviews) => {
+    if (!reviews || reviews.length === 0) return 0;
+    const sum = reviews.reduce((acc, review) => acc + review.rating, 0);
+    return (sum / reviews.length).toFixed(1);
+  };
+
+  const averageRating = calculateAverageRating(product.reviews);
+  const reviewCount = product.reviews?.length || 0;
+
+  // Generate a fallback ID if _id is missing (for products from JSON file)
+  const productId = product._id || product.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+
   return (
-    <Link to={`/product/${product._id}`} className="card group">
+    <Link to={`/product/${productId}`} className="card group">
       <div className="relative overflow-hidden h-64">
         <img
           src={product.image}
@@ -31,19 +81,61 @@ const ProductCard = ({ product }) => {
       </div>
 
       <div className="p-5">
-        <div className="flex items-center mb-2">
-          <div className="flex text-desi-gold">
-            {[...Array(5)].map((_, i) => (
-              <Star
-                key={i}
-                className={`w-4 h-4 ${
-                  i < Math.floor(product.rating) ? 'fill-current' : ''
-                }`}
-              />
-            ))}
+        {/* Rating display - interactive if user can rate, otherwise just display */}
+        {(reviewCount > 0 || (showQuickRating && userCanRate)) && (
+          <div className="flex items-center mb-2">
+            {showQuickRating && userCanRate ? (
+              // Interactive rating for users who can rate
+              <div className="flex items-center space-x-1">
+                <div 
+                  className="flex"
+                  onMouseLeave={() => setHoveredRating(0)}
+                >
+                  {[1, 2, 3, 4, 5].map((starNum) => (
+                    <button
+                      key={starNum}
+                      onClick={(e) => handleQuickRating(e, starNum)}
+                      onMouseEnter={() => setHoveredRating(starNum)}
+                      disabled={isSubmittingRating}
+                      className="focus:outline-none hover:scale-110 transition-transform disabled:opacity-50"
+                      title={`Rate ${starNum} star${starNum !== 1 ? 's' : ''}`}
+                    >
+                      <Star
+                        className={`w-5 h-5 transition-colors ${
+                          starNum <= (hoveredRating || averageRating)
+                            ? 'text-desi-gold fill-current' 
+                            : 'text-gray-300'
+                        } ${hoveredRating > 0 ? 'hover:text-desi-gold' : ''}`}
+                      />
+                    </button>
+                  ))}
+                </div>
+                <span className="ml-2 text-sm text-gray-600">
+                  {hoveredRating > 0 ? `Rate ${hoveredRating} star${hoveredRating !== 1 ? 's' : ''}` : 
+                   reviewCount > 0 ? `(${averageRating}) • ${reviewCount} review${reviewCount !== 1 ? 's' : ''}` : 
+                   'Click to rate'}
+                </span>
+              </div>
+            ) : (
+              // Display-only rating
+              <div className="flex items-center">
+                <div className="flex text-desi-gold">
+                  {[...Array(5)].map((_, i) => (
+                    <Star
+                      key={i}
+                      className={`w-4 h-4 ${
+                        i < Math.floor(averageRating) ? 'fill-current' : ''
+                      }`}
+                    />
+                  ))}
+                </div>
+                <span className="ml-2 text-sm text-gray-600">
+                  ({averageRating}) • {reviewCount} review{reviewCount !== 1 ? 's' : ''}
+                </span>
+              </div>
+            )}
           </div>
-          <span className="ml-2 text-sm text-gray-600">({product.rating})</span>
-        </div>
+        )}
 
         <h3 className="text-lg font-semibold text-gray-800 mb-2 line-clamp-2">
           {product.name}

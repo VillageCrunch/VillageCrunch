@@ -15,17 +15,23 @@ connectDB();
 // Middleware
 app.use(helmet());
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  origin: [
+    'http://localhost:5173',
+    'http://192.168.1.8:5173',
+    process.env.FRONTEND_URL
+  ].filter(Boolean), // Remove any undefined values
   credentials: true,
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Rate limiting
+// Rate limiting - More generous limits for development
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
+  max: 1000, // limit each IP to 1000 requests per windowMs (increased from 100)
   message: 'Too many requests from this IP, please try again later.',
+  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
 });
 app.use('/api/', limiter);
 
@@ -35,6 +41,10 @@ app.use('/api/products', require('./routes/products'));
 app.use('/api/orders', require('./routes/orders'));
 app.use('/api/payment', require('./routes/payment'));
 app.use('/api/contact', require('./routes/contact'));
+app.use('/api/promocodes', require('./routes/promocodes'));
+app.use('/api/campaigns', require('./routes/campaigns'));
+app.use('/api/settings', require('./routes/settings'));
+app.use('/api/cart', require('./routes/cart'));
 
 // Health check
 app.get('/api/health', (req, res) => {

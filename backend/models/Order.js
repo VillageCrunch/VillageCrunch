@@ -47,6 +47,12 @@ const orderSchema = new mongoose.Schema({
   shippingPrice: { type: Number, required: true, default: 0 },
   taxPrice: { type: Number, required: true, default: 0 },
   totalPrice: { type: Number, required: true },
+  promocode: {
+    code: String,
+    discount: { type: Number, default: 0 },
+    description: String,
+  },
+  promocodeDiscount: { type: Number, default: 0 },
   status: {
     type: String,
     enum: [

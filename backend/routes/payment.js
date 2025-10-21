@@ -9,6 +9,11 @@ const { protect } = require('../middleware/auth');
 // @access  Private
 router.post('/create-order', protect, async (req, res) => {
   try {
+    if (!razorpay) {
+      return res.status(503).json({ 
+        message: 'Payment service not configured. Please contact administrator.' 
+      });
+    }
     const { amount } = req.body;
 
     const options = {

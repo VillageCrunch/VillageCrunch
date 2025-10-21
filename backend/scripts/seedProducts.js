@@ -1,4 +1,8 @@
-[
+require('dotenv').config();
+const connectDB = require('../config/db');
+const Product = require('../models/Product');
+
+const products = [
   {
     "name": "Premium California Almonds (Badam)",
     "description": "Rich, crunchy California almonds packed with nutrition. Perfect for daily snacking, cooking, and gifting. Grade A quality handpicked almonds.",
@@ -6,9 +10,7 @@
     "price": 599,
     "originalPrice": 799,
     "image": "/Product_Images/almond.jpg",
-    "images": [
-      "/Product_Images/almond.jpg"
-    ],
+    "images": ["/Product_Images/almond.jpg"],
     "weight": "500g",
     "stock": 100,
     "featured": true,
@@ -30,9 +32,7 @@
     "price": 749,
     "originalPrice": 999,
     "image": "/Product_Images/cashew.jpg",
-    "images": [
-      "/Product_Images/cashew.jpg"
-    ],
+    "images": ["/Product_Images/cashew.jpg"],
     "weight": "500g",
     "stock": 80,
     "featured": true,
@@ -53,10 +53,8 @@
     "category": "dry-fruits",
     "price": 699,
     "originalPrice": 899,
-    "image": "/Product_Images/Walnuts.jpg" ,
-    "images": [
-     "/Product_Images/Walnuts.jpg"
-    ],
+    "image": "/Product_Images/Walnuts.jpg",
+    "images": ["/Product_Images/Walnuts.jpg"],
     "weight": "500g",
     "stock": 60,
     "featured": true,
@@ -77,10 +75,8 @@
     "category": "dry-fruits",
     "price": 899,
     "originalPrice": 1199,
-    "image": "/Product_Images/pistacho.jpg"  ,
-    "images": [
-      "/Product_Images/pistacho.jpg"
-    ],
+    "image": "/Product_Images/pistacho.jpg",
+    "images": ["/Product_Images/pistacho.jpg"],
     "weight": "500g",
     "stock": 50,
     "featured": false,
@@ -101,10 +97,8 @@
     "category": "dry-fruits",
     "price": 299,
     "originalPrice": 399,
-    "image": "/Product_Images/Raisins.jpg" ,
-    "images": [
-      "/Product_Images/Raisins.jpg"
-    ],
+    "image": "/Product_Images/Raisins.jpg",
+    "images": ["/Product_Images/Raisins.jpg"],
     "weight": "500g",
     "stock": 120,
     "featured": false,
@@ -119,8 +113,6 @@
     ],
     "ingredients": ["100% Natural Afghan Raisins"]
   },
-  
-  
   {
     "name": "Mixed Dry Fruits Premium Pack",
     "description": "Perfect blend of almonds, cashews, raisins, and pistachios. Ideal for gifting and daily consumption.",
@@ -128,9 +120,7 @@
     "price": 899,
     "originalPrice": 1199,
     "image": "/Product_Images/MixDry.jpg",
-    "images": [
-      "/Product_Images/MixDry.jpg"
-    ],
+    "images": ["/Product_Images/MixDry.jpg"],
     "weight": "1kg",
     "stock": 50,
     "featured": true,
@@ -152,9 +142,7 @@
     "price": 249,
     "originalPrice": 349,
     "image": "/Product_Images/Roasted_makhana.jpg",
-    "images": [
-      "/Product_Images/Roasted_makhana.jpg"
-    ],
+    "images": ["/Product_Images/Roasted_makhana.jpg"],
     "weight": "250g",
     "stock": 150,
     "featured": true,
@@ -176,9 +164,7 @@
     "price": 299,
     "originalPrice": 399,
     "image": "/Product_Images/Peri_Peri_Makhana.jpg",
-    "images": [
-      "/Product_Images/Peri_Peri_Makhana.jpg"
-    ],
+    "images": ["/Product_Images/Peri_Peri_Makhana.jpg"],
     "weight": "250g",
     "stock": 120,
     "featured": true,
@@ -193,7 +179,6 @@
     ],
     "ingredients": ["Fox Nuts (Makhana)", "Peri Peri Seasoning", "Edible Oil", "Salt", "Spices"]
   },
- 
   {
     "name": "Traditional Bihari Thekua",
     "description": "Authentic Bihari thekua made with jaggery and wheat flour. Traditional recipe passed down through generations. Perfect for festivals and daily consumption.",
@@ -201,9 +186,7 @@
     "price": 199,
     "originalPrice": 249,
     "image": "/Product_Images/thekua.jpg",
-    "images": [
-      "/Product_Images/thekua.jpg"
-    ],
+    "images": ["/Product_Images/thekua.jpg"],
     "weight": "500g",
     "stock": 120,
     "featured": true,
@@ -219,120 +202,13 @@
     "ingredients": ["Wheat Flour", "Jaggery", "Pure Ghee", "Cardamom", "Fennel Seeds"]
   },
   {
-    "name": "Jaggery Thekua (Gud Thekua)",
-    "description": "Sweet thekua made with pure jaggery. Healthy alternative to regular sweets.",
-    "category": "thekua",
-    "price": 219,
-    "originalPrice": 279,
-    "image": "/Product_Images/Jaggery_thekua.webp",
-    "images": [
-      "/Product_Images/Jaggery_thekua.webp"
-    ],
-    "weight": "500g",
-    "stock": 100,
-    "featured": false,
-    "rating": 4.7,
-    "reviews": [],
-    "benefits": [
-      "Natural sweetness from jaggery",
-      "Iron rich",
-      "Traditional method",
-      "No refined sugar",
-      "Energy booster"
-    ],
-    "ingredients": ["Wheat Flour", "Organic Jaggery", "Ghee", "Cardamom"]
-  },
-  {
-    "name": "Dry Fruit Thekua (Premium)",
-    "description": "Thekua enriched with almonds, cashews, and pistachios. Premium variant for special occasions.",
-    "category": "thekua",
-    "price": 349,
-    "originalPrice": 449,
-    "image": "/Product_Images/Thekua-dry.jpg",
-    "images": [
-      "/Product_Images/Thekua-dry.jpg"
-    ],
-    "weight": "500g",
-    "stock": 60,
-    "featured": false,
-    "rating": 4.8,
-    "reviews": [],
-    "benefits": [
-      "Enriched with dry fruits",
-      "Premium quality",
-      "Perfect for gifting",
-      "Extra nutrition",
-      "Unique taste"
-    ],
-    "ingredients": ["Wheat Flour", "Jaggery", "Ghee", "Almonds", "Cashews", "Pistachios", "Cardamom"]
-  },
-  {
-    "name": "Festival Special Thekua Box",
-    "description": "Special festival pack with assorted thekua varieties. Perfect for Chhath Puja and other celebrations.",
-    "category": "thekua",
-    "price": 449,
-    "originalPrice": 599,
-    "image": "/Product_Images/Festival_thekua.jpg",
-    "images": [
-      "/Product_Images/Festival_thekua.jpg"
-    ],
-    "weight": "1kg",
-    "stock": 40,
-    "featured": false,
-    "rating": 4.9,
-    "reviews": [],
-    "benefits": [
-      "Perfect for festivals",
-      "Variety pack",
-      "Traditional recipes",
-      "Beautiful packaging",
-      "Ideal for gifting"
-    ],
-    "ingredients": ["Wheat Flour", "Jaggery", "Ghee", "Dry Fruits", "Traditional Spices"]
-  },
-  
- 
-  {
-    "name": "Traditional Dry Fruit Gujiya",
-    "description": "Authentic Indian sweet dumpling filled with rich dry fruits and khoya. Handcrafted with premium ingredients using traditional recipe. Perfect for festivals and special occasions.",
-    "category": "thekua",
-    "price": 299,
-    "originalPrice": 399,
-    "image": "/Product_Images/guziya.jpg",
-    "images": [
-      "/Product_Images/guziya.jpg"
-    ],
-    "weight": "500g",
-    "stock": 80,
-    "featured": true,
-    "rating": 4.8,
-    "reviews": [],
-    "benefits": [
-      "Rich in dry fruits and nutrients",
-      "Traditional festival favorite",
-      "Handmade with pure ghee",
-      "Perfect gifting option",
-      "Authentic taste"
-    ],
-    "ingredients": [
-      "Refined Flour (Maida)",
-      "Pure Ghee",
-      "Khoya",
-      "Mixed Dry Fruits (Almonds, Cashews, Raisins)",
-      "Cardamom Powder",
-      "Sugar"
-    ]
-  },
-  {
     "name": "Pure Natural Makhana (Lotus Seeds)",
     "description": "Premium quality, handpicked lotus seeds (fox nuts) in their pure, unroasted form. Perfect for home roasting or cooking. Extra-large size, supreme grade phool makhana from Bihar's finest lotus ponds.",
     "category": "makhana",
     "price": 199,
     "originalPrice": 299,
     "image": "/Product_Images/Makhana.jpg",
-    "images": [
-      "/Product_Images/Makhana.jpg"
-    ],
+    "images": ["/Product_Images/Makhana.jpg"],
     "weight": "250g",
     "stock": 200,
     "featured": true,
@@ -345,8 +221,32 @@
       "Perfect for diabetics",
       "Versatile - can be roasted or cooked"
     ],
-    "ingredients": [
-      "100% Pure Lotus Seeds (Phool Makhana)"
-    ]
+    "ingredients": ["100% Pure Lotus Seeds (Phool Makhana)"]
   }
-]
+];
+
+const seedProducts = async () => {
+  try {
+    await connectDB();
+    
+    // Clear existing products
+    await Product.deleteMany({});
+    console.log('🗑️ Existing products deleted');
+
+    // Insert new products
+    const insertedProducts = await Product.insertMany(products);
+    console.log(`✅ Successfully seeded ${insertedProducts.length} products`);
+
+    // Show inserted products
+    insertedProducts.forEach(product => {
+      console.log(`   - ${product.name} (${product.category})`);
+    });
+
+    process.exit(0);
+  } catch (error) {
+    console.error('❌ Error seeding products:', error);
+    process.exit(1);
+  }
+};
+
+seedProducts();

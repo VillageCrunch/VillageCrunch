@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useCart } from '../context/CartContext';
 import toast from 'react-hot-toast';
 
 const Login = () => {
@@ -14,6 +15,7 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   
   const { login } = useAuth();
+  const { syncCartOnLogin } = useCart();
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -28,7 +30,13 @@ const Login = () => {
     setLoading(true);
 
     try {
-      await login(formData.emailOrPhone, formData.password);
+      const result = await login(formData.emailOrPhone, formData.password);
+      
+      // Sync cart if user had items in local storage
+      if (result.localCart && result.localCart.length > 0) {
+        await syncCartOnLogin(result.localCart);
+      }
+      
       toast.success('Logged in successfully!');
       navigate(redirect);
     } catch (error) {

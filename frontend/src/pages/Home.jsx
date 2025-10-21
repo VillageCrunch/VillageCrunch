@@ -167,8 +167,8 @@ const Home = () => {
                   <div className="text-sm text-gray-600">Happy Customers</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-3xl font-bold text-desi-brown">4.8★</div>
-                  <div className="text-sm text-gray-600">Rating</div>
+                  <div className="text-3xl font-bold text-desi-brown">24/7</div>
+                  <div className="text-sm text-gray-600">Support</div>
                 </div>
               </div>
             </div>
@@ -371,43 +371,32 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Testimonials */}
+      {/* Customer Reviews Info */}
       <section className="py-16 bg-desi-cream">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="section-title mb-12">What Our Customers Say</h2>
+          <h2 className="section-title mb-12">Authentic Customer Reviews</h2>
           
-          <div className="grid md:grid-cols-3 gap-8">
-            {[
-              {
-                name: 'Priya Sharma',
-                location: 'Mumbai',
-                rating: 5,
-                text: 'Best quality dry fruits I have ever purchased! Fresh and perfectly packed.',
-              },
-              {
-                name: 'Rajesh Kumar',
-                location: 'Delhi',
-                rating: 5,
-                text: 'The makhana is absolutely delicious. My family loves it as a healthy snack.',
-              },
-              {
-                name: 'Anjali Singh',
-                location: 'Patna',
-                rating: 5,
-                text: 'Authentic Bihari thekua that reminds me of home. Simply amazing!',
-              },
-            ].map((testimonial, index) => (
-              <div key={index} className="bg-white p-6 rounded-xl shadow-md">
-                <div className="flex text-desi-gold mb-4">
-                  {[...Array(testimonial.rating)].map((_, i) => (
-                    <Star key={i} className="w-5 h-5 fill-current" />
-                  ))}
-                </div>
-                <p className="text-gray-700 mb-4 italic">"{testimonial.text}"</p>
-                <div className="font-semibold text-desi-brown">{testimonial.name}</div>
-                <div className="text-sm text-gray-600">{testimonial.location}</div>
+          <div className="text-center">
+            <div className="bg-white p-8 rounded-xl shadow-md max-w-2xl mx-auto">
+              <div className="flex justify-center mb-4">
+                <Star className="w-12 h-12 text-desi-gold" />
               </div>
-            ))}
+              <h3 className="text-2xl font-bold text-desi-brown mb-4">
+                Real Reviews from Real Customers
+              </h3>
+              <p className="text-gray-700 mb-6">
+                We believe in authentic feedback. Our product reviews come only from customers 
+                who have purchased and received their orders. See genuine ratings and reviews 
+                on each product page.
+              </p>
+              <Link
+                to="/products"
+                className="inline-flex items-center space-x-2 bg-desi-gold text-desi-brown px-6 py-3 rounded-lg hover:bg-yellow-500 transition font-semibold"
+              >
+                <span>Browse Products & Reviews</span>
+                <ArrowRight className="w-5 h-5" />
+              </Link>
+            </div>
           </div>
         </div>
       </section>

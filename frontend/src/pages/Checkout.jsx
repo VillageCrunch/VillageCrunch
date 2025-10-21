@@ -1,15 +1,22 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
-import { createOrder, createPaymentOrder, verifyPayment, updateOrderToPaid } from '../utils/api';
-import { MapPin, Plus, CheckCircle } from 'lucide-react';
+import { createOrder, createPaymentOrder, verifyPayment, updateOrderToPaid, calculateOrderTotal, getSettings } from '../utils/api';
+import { MapPin, Plus } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const Checkout = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { cartItems, getCartTotal, clearCart } = useCart();
   const { user } = useAuth();
+
+  // Get promocode data from navigation state (from Cart page)
+  const [appliedPromocode, setAppliedPromocode] = useState(location.state?.appliedPromocode || null);
+  const [orderTotals, setOrderTotals] = useState(location.state?.orderTotals || null);
+  const [settings, setSettings] = useState(null);
+  const [settingsLoading, setSettingsLoading] = useState(true);
 
   const [shippingInfo, setShippingInfo] = useState({
     name: user?.name || '',
@@ -26,6 +33,51 @@ const Checkout = () => {
 
   const [loading, setLoading] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState('razorpay');
+
+  // Fetch settings and recalculate if no order totals from cart
+  useEffect(() => {
+    const fetchSettingsAndCalculate = async () => {
+      try {
+        setSettingsLoading(true);
+        
+        // Fetch settings
+        const settingsData = await getSettings();
+        setSettings(settingsData);
+
+        // If no order totals from cart, calculate them
+        if (!orderTotals && cartItems.length > 0) {
+          const cartProducts = cartItems.map(item => ({
+            productId: item._id,
+            quantity: item.quantity,
+            price: item.price,
+            category: item.category
+          }));
+
+          const totals = await calculateOrderTotal(cartProducts, 'standard', appliedPromocode);
+          setOrderTotals(totals);
+        }
+      } catch (error) {
+        console.error('Error fetching settings:', error);
+        // Use fallback values if settings fetch fails
+        setSettings({
+          pricing: {
+            taxRate: 18,
+            shippingCharges: {
+              standard: {
+                rate: 50,
+                freeShippingThreshold: 500
+              }
+            },
+            codCharges: 25
+          }
+        });
+      } finally {
+        setSettingsLoading(false);
+      }
+    };
+
+    fetchSettingsAndCalculate();
+  }, [cartItems, appliedPromocode, orderTotals]);
 
   // Initialize addresses and default address selection
   useEffect(() => {
@@ -50,9 +102,21 @@ const Checkout = () => {
   }, [user, useNewAddress]);
 
   const subtotal = getCartTotal();
-  const shipping = subtotal >= 500 ? 0 : 50;
-  const tax = subtotal * 0.05;
-  const total = subtotal + shipping + tax;
+  
+  // Use calculated order totals if available, otherwise fallback to settings-based calculation
+  const shipping = orderTotals?.shipping?.cost ?? 
+    (settings?.pricing?.shippingCharges?.standard?.freeShippingThreshold && subtotal >= settings.pricing.shippingCharges.standard.freeShippingThreshold ? 0 : 
+     settings?.pricing?.shippingCharges?.standard?.rate ?? 50);
+  
+  const tax = orderTotals?.tax?.amount ?? 
+    (subtotal * (settings?.pricing?.taxRate ?? 18) / 100);
+  
+  const promocodeDiscount = orderTotals?.discount?.amount ?? 0;
+  
+  // Add COD charges if payment method is COD
+  const codCharges = paymentMethod === 'cod' ? (settings?.pricing?.codCharges ?? 0) : 0;
+  
+  const total = orderTotals?.total ?? (subtotal + shipping + tax + codCharges - promocodeDiscount);
 
   const handleChange = (e) => {
     setShippingInfo({
@@ -119,6 +183,12 @@ const Checkout = () => {
         shippingPrice: shipping,
         taxPrice: tax,
         totalPrice: total,
+        promocode: appliedPromocode ? {
+          code: appliedPromocode.code,
+          discount: promocodeDiscount,
+          description: appliedPromocode.description
+        } : null,
+        promocodeDiscount: promocodeDiscount,
       };
 
       console.log('Cart items structure:', cartItems);
@@ -246,6 +316,12 @@ const Checkout = () => {
               shippingPrice: shipping,
               taxPrice: tax,
               totalPrice: total,
+              promocode: appliedPromocode ? {
+                code: appliedPromocode.code,
+                discount: promocodeDiscount,
+                description: appliedPromocode.description
+              } : null,
+              promocodeDiscount: promocodeDiscount,
             };
 
             const order = await createOrder(orderData);
@@ -568,7 +644,10 @@ const Checkout = () => {
                     />
                     <div>
                       <p className="font-medium">Cash on Delivery</p>
-                      <p className="text-sm text-gray-500">Pay with cash when your order arrives</p>
+                      <p className="text-sm text-gray-500">
+                        Pay with cash when your order arrives
+                        {codCharges > 0 && ` (+ ₹${codCharges} COD charges)`}
+                      </p>
                     </div>
                   </label>
                 </div>
@@ -622,19 +701,40 @@ const Checkout = () => {
                 </div>
                 <div className="flex justify-between text-gray-700">
                   <span>Shipping</span>
-                  <span>{shipping === 0 ? 'FREE' : `₹${shipping.toFixed(2)}`}</span>
+                  <span>{shipping === 0 ? 'FREE' : `₹${Number(shipping).toFixed(2)}`}</span>
                 </div>
-                <div className="flex justify-between text-gray-700">
-                  <span>Tax</span>
-                  <span>₹{tax.toFixed(2)}</span>
-                </div>
+                {settings && settings.pricing.taxRate > 0 && (
+                  <div className="flex justify-between text-gray-700">
+                    <span>Tax ({settings.pricing.taxRate}% GST)</span>
+                    <span>₹{Number(tax).toFixed(2)}</span>
+                  </div>
+                )}
+                {paymentMethod === 'cod' && settings && settings.pricing.codCharges > 0 && (
+                  <div className="flex justify-between text-gray-700">
+                    <span>COD Charges</span>
+                    <span>₹{Number(settings.pricing.codCharges).toFixed(2)}</span>
+                  </div>
+                )}
+                {appliedPromocode && (
+                  <div className="flex justify-between text-green-600">
+                    <span className="flex items-center">
+                      💰 Promocode Discount ({appliedPromocode.code})
+                    </span>
+                    <span>-₹{Number(promocodeDiscount).toFixed(2)}</span>
+                  </div>
+                )}
               </div>
 
               <div className="border-t pt-4">
                 <div className="flex justify-between text-lg font-bold">
                   <span>Total</span>
-                  <span className="text-desi-brown">₹{total.toFixed(2)}</span>
+                  <span className="text-desi-brown">₹{Number(total).toFixed(2)}</span>
                 </div>
+                {appliedPromocode && (
+                  <div className="text-sm text-green-600 mt-1 text-right">
+                    You saved ₹{Number(promocodeDiscount).toFixed(2)}!
+                  </div>
+                )}
               </div>
             </div>
           </div>

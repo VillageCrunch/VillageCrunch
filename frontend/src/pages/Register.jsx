@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useCart } from '../context/CartContext';
 import toast from 'react-hot-toast';
 
 const Register = () => {
@@ -17,6 +18,7 @@ const Register = () => {
   const [loading, setLoading] = useState(false);
   
   const { register } = useAuth();
+  const { syncCartOnLogin } = useCart();
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -42,12 +44,18 @@ const Register = () => {
     setLoading(true);
 
     try {
-      await register({
+      const result = await register({
         name: formData.name,
         email: formData.email,
         phone: formData.phone,
         password: formData.password,
       });
+      
+      // Sync cart if user had items in local storage
+      if (result.localCart && result.localCart.length > 0) {
+        await syncCartOnLogin(result.localCart);
+      }
+      
       toast.success('Account created successfully!');
       navigate(redirect);
     } catch (error) {

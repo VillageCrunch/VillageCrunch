@@ -13,7 +13,6 @@ const productSchema = new mongoose.Schema({
   category: {
     type: String,
     required: true,
-    enum: ['dry-fruits', 'makhana', 'thekua', 'combo'],
   },
   price: {
     type: Number,
@@ -30,7 +29,6 @@ const productSchema = new mongoose.Schema({
   images: [String],
   weight: {
     type: String,
-    required: true,
   },
   stock: {
     type: Number,
@@ -57,6 +55,10 @@ const productSchema = new mongoose.Schema({
     rating: Number,
     comment: String,
     createdAt: {
+      type: Date,
+      default: Date.now,
+    },
+    updatedAt: {
       type: Date,
       default: Date.now,
     },

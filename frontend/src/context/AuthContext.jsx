@@ -29,21 +29,33 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = async (emailOrPhone, password) => {
+    // Get local cart before login
+    const localCartString = localStorage.getItem('cart');
+    const localCart = localCartString ? JSON.parse(localCartString) : [];
+
     const { data } = await axios.post('/api/auth/login', { emailOrPhone, password });
     setUser(data);
     localStorage.setItem('user', JSON.stringify(data));
     localStorage.setItem('token', data.token);
     axios.defaults.headers.common['Authorization'] = `Bearer ${data.token}`;
-    return data;
+    
+    // Return both user data and local cart for syncing
+    return { user: data, localCart };
   };
 
   const register = async (userData) => {
+    // Get local cart before registration
+    const localCartString = localStorage.getItem('cart');
+    const localCart = localCartString ? JSON.parse(localCartString) : [];
+
     const { data } = await axios.post('/api/auth/register', userData);
     setUser(data);
     localStorage.setItem('user', JSON.stringify(data));
     localStorage.setItem('token', data.token);
     axios.defaults.headers.common['Authorization'] = `Bearer ${data.token}`;
-    return data;
+    
+    // Return both user data and local cart for syncing
+    return { user: data, localCart };
   };
 
   const logout = () => {
