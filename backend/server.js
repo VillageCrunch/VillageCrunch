@@ -21,10 +21,10 @@ app.use(
   cors({
     origin: [
       'http://localhost:5173',       // local dev
-      'https://villagecrunch.me',    // production domain
-      process.env.FRONTEND_URL,
+      'https://villagecrunch.me',    // production
+      process.env.FRONTEND_URL
     ].filter(Boolean),
-    credentials: true,
+    credentials: true
   })
 );
 
@@ -44,14 +44,11 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', message: 'Server is running' });
 });
 
-// --- Serve Frontend Build (React) ---
+// --- Serve React Frontend (dist inside backend/frontend) ---
 const __dirnameFull = path.resolve();
-app.use(express.static(path.join(__dirnameFull, '../frontend/dist'))); 
-// Note: Adjust path if your frontend is not sibling to backend
-
-// --- React Router Fallback (Prevents 404 on reload) ---
+app.use(express.static(path.join(__dirnameFull, 'frontend/dist')));
 app.get('*', (req, res) => {
-  res.sendFile(path.resolve(__dirnameFull, '../frontend/dist/index.html'));
+  res.sendFile(path.join(__dirnameFull, 'frontend/dist/index.html'));
 });
 
 // --- Error Handling Middleware ---
@@ -59,12 +56,12 @@ app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({
     message: 'Something went wrong!',
-    error: process.env.NODE_ENV === 'development' ? err.message : undefined,
+    error: process.env.NODE_ENV === 'development' ? err.message : undefined
   });
 });
 
 // --- Start Server ---
-const PORT = process.env.PORT || 8080; // DO App Platform typically exposes 8080
+const PORT = process.env.PORT || 8080; // DO App Platform exposes 8080
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT} in ${process.env.NODE_ENV} mode`);
 });
