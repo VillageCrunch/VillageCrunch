@@ -78,4 +78,23 @@ body {
       z-index: 3; /* keep exiting on top while it fades */
       transition: opacity 1400ms cubic-bezier(.22,.9,.32,1), transform 1400ms cubic-bezier(.22,.9,.32,1);
     }
+
+    /* Floating animations for modern touch */
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-20px); }
+    }
+    
+    @keyframes float-delay {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-15px); }
+    }
+    
+    .animate-float {
+      animation: float 6s ease-in-out infinite;
+    }
+    
+    .animate-float-delay {
+      animation: float-delay 8s ease-in-out infinite 2s;
+    }
 }

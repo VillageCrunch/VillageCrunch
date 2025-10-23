@@ -2,15 +2,15 @@ import { useState, useEffect } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
-import { createOrder, createPaymentOrder, verifyPayment, updateOrderToPaid, calculateOrderTotal, getSettings } from '../utils/api';
-import { MapPin, Plus } from 'lucide-react';
+import { createOrder, createPaymentOrder, verifyPayment, updateOrderToPaid, calculateOrderTotal, getSettings, saveAddressFromCheckout, getUserProfile, getUserAddresses } from '../utils/api';
+import { MapPin, Plus, CheckCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const Checkout = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { cartItems, getCartTotal, clearCart } = useCart();
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
 
   // Get promocode data from navigation state (from Cart page)
   const [appliedPromocode, setAppliedPromocode] = useState(location.state?.appliedPromocode || null);
@@ -30,9 +30,12 @@ const Checkout = () => {
   const [selectedAddress, setSelectedAddress] = useState(null);
   const [useNewAddress, setUseNewAddress] = useState(false);
   const [addresses, setAddresses] = useState([]);
+  const [saveNewAddress, setSaveNewAddress] = useState(true); // Auto-save new addresses
 
   const [loading, setLoading] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState('razorpay');
+  
+
 
   // Fetch settings and recalculate if no order totals from cart
   useEffect(() => {
@@ -79,29 +82,80 @@ const Checkout = () => {
     fetchSettingsAndCalculate();
   }, [cartItems, appliedPromocode, orderTotals]);
 
-  // Initialize addresses and default address selection
-  useEffect(() => {
-    if (user?.addresses && user.addresses.length > 0) {
-      setAddresses(user.addresses);
-      const defaultAddressIndex = user.addresses.findIndex(addr => addr.isDefault);
-      if (defaultAddressIndex !== -1 && !useNewAddress) {
-        const defaultAddress = user.addresses[defaultAddressIndex];
-        setSelectedAddress(defaultAddressIndex);
+  // Function to fetch and set up addresses
+  const fetchUserAddresses = async () => {
+    if (!user) return;
+    
+    try {
+      console.log('Fetching user addresses from API...');
+      const addressesData = await getUserAddresses();
+      console.log('Fetched addresses:', addressesData?.length || 0, addressesData);
+      
+      setAddresses(addressesData || []);
+      
+      if (addressesData && addressesData.length > 0) {
+        const defaultAddressIndex = addressesData.findIndex(addr => addr.isDefault);
+        if (defaultAddressIndex !== -1) {
+          const defaultAddress = addressesData[defaultAddressIndex];
+          setSelectedAddress(defaultAddressIndex);
+          setUseNewAddress(false);
+          setShippingInfo({
+            name: user.name || '',
+            phone: user.phone || '',
+            street: defaultAddress.street,
+            city: defaultAddress.city,
+            state: defaultAddress.state,
+            pincode: defaultAddress.pincode,
+          });
+        } else {
+          // User has addresses but none is default, show first address
+          const firstAddress = addressesData[0];
+          setSelectedAddress(0);
+          setUseNewAddress(false);
+          setShippingInfo({
+            name: user.name || '',
+            phone: user.phone || '',
+            street: firstAddress.street,
+            city: firstAddress.city,
+            state: firstAddress.state,
+            pincode: firstAddress.pincode,
+          });
+        }
+      } else {
+        // No saved addresses, user must enter new address
+        console.log('No saved addresses found, setting useNewAddress to true');
+        setUseNewAddress(true);
+        setSelectedAddress(null);
         setShippingInfo({
-          name: user.name || '',
-          phone: user.phone || '',
-          street: defaultAddress.street,
-          city: defaultAddress.city,
-          state: defaultAddress.state,
-          pincode: defaultAddress.pincode,
+          name: user?.name || '',
+          phone: user?.phone || '',
+          street: '',
+          city: '',
+          state: '',
+          pincode: '',
         });
       }
-    } else {
+    } catch (error) {
+      console.error('Error fetching addresses:', error);
+      // Fallback to empty state
+      setAddresses([]);
       setUseNewAddress(true);
+      setSelectedAddress(null);
+      setShippingInfo({
+        name: user?.name || '',
+        phone: user?.phone || '',
+        street: '',
+        city: '',
+        state: '',
+        pincode: '',
+      });
     }
-  }, [user, useNewAddress]);
+  };
 
-  const subtotal = getCartTotal();
+  // Fetch addresses from API when component mounts or user changes
+  useEffect(() => {
+    fetchUserAddresses();
+  }, [user]);  const subtotal = getCartTotal();
   
   // Use calculated order totals if available, otherwise fallback to settings-based calculation
   const shipping = orderTotals?.shipping?.cost ?? 
@@ -154,6 +208,37 @@ const Checkout = () => {
   const handleCOD = async () => {
     try {
       setLoading(true);
+
+      // Save new address if user is using a new address and wants to save it
+      if (useNewAddress && saveNewAddress) {
+        try {
+          
+          const savedAddress = await saveAddressFromCheckout({
+            street: shippingInfo.street,
+            city: shippingInfo.city,
+            state: shippingInfo.state,
+            pincode: shippingInfo.pincode,
+            phone: shippingInfo.phone,
+            saveAddress: true
+          });
+          
+          console.log('Address saved successfully:', savedAddress);
+          
+          // Refresh addresses from API to get updated list
+          await fetchUserAddresses();
+          console.log('Addresses refreshed after saving new address');
+          
+          if (savedAddress.message.includes('already exists')) {
+            toast.success('Address already in your saved addresses!', { duration: 2000 });
+          } else {
+            toast.success('Address saved for future orders!', { duration: 2000 });
+          }
+        } catch (addressError) {
+          // Don't fail the order if address saving fails
+          console.error('Failed to save address:', addressError);
+          toast.error('Address could not be saved, but order will continue');
+        }
+      }
 
       // Create order in database with COD payment method
       const orderData = {
@@ -288,6 +373,50 @@ const Checkout = () => {
         // Handler for successful payment
         handler: async function (response) {
           try {
+            // Save new address if user is using a new address and wants to save it
+            console.log('Address saving check (online) - useNewAddress:', useNewAddress, 'saveNewAddress:', saveNewAddress);
+            if (useNewAddress && saveNewAddress) {
+              try {
+                console.log('Attempting to save address (online payment):', {
+                  street: shippingInfo.street,
+                  city: shippingInfo.city,
+                  state: shippingInfo.state,
+                  pincode: shippingInfo.pincode,
+                  saveAddress: true
+                });
+                
+                const savedAddress = await saveAddressFromCheckout({
+                  street: shippingInfo.street,
+                  city: shippingInfo.city,
+                  state: shippingInfo.state,
+                  pincode: shippingInfo.pincode,
+                  phone: shippingInfo.phone,
+                  saveAddress: true
+                });
+                
+                console.log('Address saved successfully (online payment):', savedAddress);
+                
+                // Refresh user profile to get updated addresses
+                try {
+                  const updatedProfile = await getUserProfile();
+                  updateUser(updatedProfile);
+                  console.log('User profile updated with new addresses (online):', updatedProfile.addresses?.length);
+                } catch (profileError) {
+                  console.warn('Failed to refresh user profile (online):', profileError);
+                }
+                
+                if (savedAddress.message.includes('already exists')) {
+                  toast.success('Address already in your saved addresses!', { duration: 2000 });
+                } else {
+                  toast.success('Address saved for future orders!', { duration: 2000 });
+                }
+              } catch (addressError) {
+                // Don't fail the order if address saving fails
+                console.error('Failed to save address (online payment):', addressError);
+                toast.error('Address could not be saved, but order will continue');
+              }
+            }
+
             // Verify payment
             await verifyPayment({
               razorpayOrderId: response.razorpay_order_id,
@@ -473,7 +602,9 @@ const Checkout = () => {
 
                   {addresses.length === 0 && (
                     <div className="text-center py-6">
-                      <p className="text-gray-600 mb-4">No saved addresses found.</p>
+                      <p className="text-gray-600 mb-4">
+                        No saved addresses found. (Debug: user.addresses = {user?.addresses?.length || 'undefined'})
+                      </p>
                       <Link
                         to="/profile"
                         className="text-desi-gold hover:text-yellow-600 font-medium"
@@ -597,6 +728,24 @@ const Checkout = () => {
                         required
                         className="input-field"
                       />
+                    </div>
+
+                    {/* Save Address Checkbox */}
+                    <div className="md:col-span-2">
+                      <label className="flex items-center space-x-3 p-4 border border-desi-cream rounded-lg bg-desi-cream/10">
+                        <input
+                          type="checkbox"
+                          checked={saveNewAddress}
+                          onChange={(e) => setSaveNewAddress(e.target.checked)}
+                          className="h-4 w-4 text-desi-gold border-gray-300 rounded focus:ring-desi-gold"
+                        />
+                        <div>
+                          <p className="font-medium text-gray-900">Save this address for future orders</p>
+                          <p className="text-sm text-gray-600">
+                            This address will be added to your profile for quick checkout next time
+                          </p>
+                        </div>
+                      </label>
                     </div>
                   </>
                 )}

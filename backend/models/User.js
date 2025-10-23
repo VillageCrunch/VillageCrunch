@@ -26,11 +26,40 @@ const userSchema = new mongoose.Schema(
     },
     addresses: [
       {
-        street: String,
-        city: String,
-        state: String,
-        pincode: String,
-        isDefault: { type: Boolean, default: false },
+        street: {
+          type: String,
+          required: true,
+          trim: true
+        },
+        city: {
+          type: String,
+          required: true,
+          trim: true
+        },
+        state: {
+          type: String,
+          required: true,
+          trim: true
+        },
+        pincode: {
+          type: String,
+          required: true,
+          trim: true,
+          match: [/^[1-9][0-9]{5}$/, 'Please enter a valid PIN code']
+        },
+        phone: {
+          type: String,
+          required: true,
+          trim: true
+        },
+        isDefault: { 
+          type: Boolean, 
+          default: false 
+        },
+        createdAt: {
+          type: Date,
+          default: Date.now
+        }
       },
     ],
     role: {
@@ -44,6 +73,12 @@ const userSchema = new mongoose.Schema(
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Order',
+      },
+    ],
+    wishlist: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Product',
       },
     ],
   },

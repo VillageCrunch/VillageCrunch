@@ -429,5 +429,105 @@ export const uploadProductImages = async (imageFiles) => {
   return data;
 };
 
+// ✅ Address Management
+export const getUserAddresses = async () => {
+  const token = localStorage.getItem('token');
+  const { data } = await axios.get(`${API_URL}/addresses`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return data;
+};
+
+export const addAddress = async (addressData) => {
+  const token = localStorage.getItem('token');
+  const { data } = await axios.post(`${API_URL}/addresses`, addressData, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return data;
+};
+
+export const updateAddress = async (addressId, addressData) => {
+  const token = localStorage.getItem('token');
+  const { data } = await axios.put(`${API_URL}/addresses/${addressId}`, addressData, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return data;
+};
+
+export const deleteAddress = async (addressId) => {
+  const token = localStorage.getItem('token');
+  const { data } = await axios.delete(`${API_URL}/addresses/${addressId}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return data;
+};
+
+export const setDefaultAddress = async (addressId) => {
+  const token = localStorage.getItem('token');
+  const { data } = await axios.put(`${API_URL}/addresses/${addressId}/default`, {}, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return data;
+};
+
+export const saveAddressFromCheckout = async (addressData) => {
+  const token = localStorage.getItem('token');
+  const { data } = await axios.post(`${API_URL}/addresses/save-from-checkout`, addressData, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return data;
+};
+
+// Get current user profile
+export const getUserProfile = async () => {
+  const token = localStorage.getItem('token');
+  const { data } = await axios.get(`${API_URL}/auth/profile`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return data;
+};
+
+// Get user stats
+export const getUserStats = async () => {
+  const token = localStorage.getItem('token');
+  const { data } = await axios.get(`${API_URL}/auth/stats`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return data;
+};
+
+// ✅ Wishlist Management
+export const getWishlist = async () => {
+  const token = localStorage.getItem('token');
+  const { data } = await axios.get(`${API_URL}/wishlist`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return data;
+};
+
+export const addToWishlist = async (productId) => {
+  const token = localStorage.getItem('token');
+  const { data } = await axios.post(`${API_URL}/wishlist/add/${productId}`, {}, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return data;
+};
+
+export const removeFromWishlist = async (productId) => {
+  const token = localStorage.getItem('token');
+  const { data } = await axios.delete(`${API_URL}/wishlist/remove/${productId}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return data;
+};
+
+export const toggleWishlist = async (productId) => {
+  const token = localStorage.getItem('token');
+  const { data } = await axios.post(`${API_URL}/wishlist/toggle/${productId}`, {}, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return data;
+};
+
 // Export the axios instance as default
 export default api;

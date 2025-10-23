@@ -1,9 +1,9 @@
 import { Link } from 'react-router-dom';
-import { ShoppingCart, Star } from 'lucide-react';
+import { ShoppingCart, Star, Heart } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
-import { useState } from 'react';
-import { createReview } from '../utils/api';
+import { useState, useEffect } from 'react';
+import { createReview, toggleWishlist, getWishlist } from '../utils/api';
 import toast from 'react-hot-toast';
 
 const ProductCard = ({ product, showQuickRating = false, userCanRate = false, onRatingSubmit }) => {
@@ -11,10 +11,55 @@ const ProductCard = ({ product, showQuickRating = false, userCanRate = false, on
   const { user } = useAuth();
   const [hoveredRating, setHoveredRating] = useState(0);
   const [isSubmittingRating, setIsSubmittingRating] = useState(false);
+  const [isInWishlist, setIsInWishlist] = useState(false);
+  const [isTogglingWishlist, setIsTogglingWishlist] = useState(false);
+
+  // Check if product is in wishlist on component mount
+  useEffect(() => {
+    if (user && product._id) {
+      checkWishlistStatus();
+    }
+  }, [user, product._id]);
+
+  const checkWishlistStatus = async () => {
+    try {
+      const wishlistItems = await getWishlist();
+      setIsInWishlist(wishlistItems.some(item => item._id === product._id));
+    } catch (error) {
+      console.error('Failed to check wishlist status:', error);
+    }
+  };
 
   const handleAddToCart = (e) => {
     e.preventDefault();
     addToCart(product);
+  };
+
+  const handleToggleWishlist = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (!user) {
+      toast.error('Please login to add to wishlist');
+      return;
+    }
+
+    if (!product._id) {
+      toast.error('Cannot add this product to wishlist');
+      return;
+    }
+
+    setIsTogglingWishlist(true);
+    try {
+      await toggleWishlist(product._id);
+      setIsInWishlist(!isInWishlist);
+      toast.success(isInWishlist ? 'Removed from wishlist' : 'Added to wishlist');
+    } catch (error) {
+      console.error('Failed to toggle wishlist:', error);
+      toast.error('Failed to update wishlist');
+    } finally {
+      setIsTogglingWishlist(false);
+    }
   };
 
   const handleQuickRating = async (e, rating) => {
@@ -72,6 +117,28 @@ const ProductCard = ({ product, showQuickRating = false, userCanRate = false, on
           <div className="absolute top-4 left-4 bg-desi-terracotta text-white px-3 py-1 rounded-full text-sm font-semibold">
             {Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF
           </div>
+        )}
+        
+        {/* Wishlist button */}
+        {user && product._id && (
+          <button
+            onClick={handleToggleWishlist}
+            disabled={isTogglingWishlist}
+            className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm p-2 rounded-full hover:bg-white transition-all duration-300 shadow-md disabled:opacity-50"
+            title={isInWishlist ? 'Remove from wishlist' : 'Add to wishlist'}
+          >
+            {isTogglingWishlist ? (
+              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-red-500"></div>
+            ) : (
+              <Heart 
+                className={`w-5 h-5 transition-colors ${
+                  isInWishlist 
+                    ? 'text-red-500 fill-current' 
+                    : 'text-gray-400 hover:text-red-500'
+                }`} 
+              />
+            )}
+          </button>
         )}
         {product.stock === 0 && (
           <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">

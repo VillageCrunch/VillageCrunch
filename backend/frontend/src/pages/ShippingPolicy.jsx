@@ -1,267 +1,256 @@
-import { Truck, Clock, Package, Shield, MapPin, AlertCircle, Phone, Mail } from 'lucide-react';
+import React from 'react';
+import { Truck, Clock, Package, Shield, MapPin, CheckCircle, Phone, Mail } from 'lucide-react';
 
 const ShippingPolicy = () => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-yellow-50">
-      {/* Hero Section */}
-      <div className="bg-gradient-to-r from-desi-brown to-amber-800 text-white py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">Shipping Policy</h1>
-          <p className="text-xl opacity-90 max-w-2xl mx-auto">
-            Fast, secure, and reliable delivery of premium dry fruits to your doorstep
-          </p>
+    <div className="min-h-screen bg-gray-50 py-12">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="text-center mb-12">
+          <h1 className="text-4xl font-bold text-desi-brown mb-4">Shipping Policy</h1>
+          <p className="text-lg text-gray-600">Fast, secure, and reliable delivery across India</p>
         </div>
-      </div>
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         {/* Quick Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-          <div className="bg-white rounded-lg p-6 shadow-md text-center">
-            <div className="bg-desi-gold bg-opacity-20 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Truck className="w-8 h-8 text-desi-brown" />
+        <div className="grid md:grid-cols-3 gap-6 mb-12">
+          <div className="bg-white rounded-lg shadow-md p-6 text-center">
+            <div className="bg-desi-gold p-3 rounded-full w-fit mx-auto mb-4">
+              <Truck className="w-6 h-6 text-desi-brown" />
             </div>
-            <h3 className="font-semibold text-desi-brown mb-2">Free Shipping</h3>
-            <p className="text-gray-600 text-sm">On orders above ₹999</p>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Fast Delivery</h3>
+            <p className="text-gray-600">2-5 business days across India</p>
           </div>
-          
-          <div className="bg-white rounded-lg p-6 shadow-md text-center">
-            <div className="bg-desi-gold bg-opacity-20 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Clock className="w-8 h-8 text-desi-brown" />
+
+          <div className="bg-white rounded-lg shadow-md p-6 text-center">
+            <div className="bg-desi-gold p-3 rounded-full w-fit mx-auto mb-4">
+              <Shield className="w-6 h-6 text-desi-brown" />
             </div>
-            <h3 className="font-semibold text-desi-brown mb-2">Fast Delivery</h3>
-            <p className="text-gray-600 text-sm">2-5 business days</p>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Secure Packaging</h3>
+            <p className="text-gray-600">Premium protection for freshness</p>
           </div>
-          
-          <div className="bg-white rounded-lg p-6 shadow-md text-center">
-            <div className="bg-desi-gold bg-opacity-20 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Package className="w-8 h-8 text-desi-brown" />
+
+          <div className="bg-white rounded-lg shadow-md p-6 text-center">
+            <div className="bg-desi-gold p-3 rounded-full w-fit mx-auto mb-4">
+              <Package className="w-6 h-6 text-desi-brown" />
             </div>
-            <h3 className="font-semibold text-desi-brown mb-2">Secure Packaging</h3>
-            <p className="text-gray-600 text-sm">Freshness guaranteed</p>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Free Shipping</h3>
+            <p className="text-gray-600">On orders above ₹999</p>
           </div>
         </div>
 
-        {/* Detailed Policy */}
-        <div className="bg-white rounded-lg shadow-lg p-8 space-y-8">
+        {/* Delivery Information */}
+        <div className="bg-white rounded-lg shadow-md p-8 mb-8">
+          <div className="flex items-center mb-6">
+            <Clock className="w-6 h-6 text-desi-gold mr-3" />
+            <h2 className="text-2xl font-bold text-gray-900">Delivery Timeframes</h2>
+          </div>
           
-          {/* Shipping Zones */}
-          <section>
-            <div className="flex items-center mb-4">
-              <MapPin className="w-6 h-6 text-desi-brown mr-3" />
-              <h2 className="text-2xl font-bold text-desi-brown">Shipping Zones & Charges</h2>
+          <div className="grid md:grid-cols-2 gap-6">
+            <div className="border-l-4 border-desi-gold pl-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-3">Express Delivery</h3>
+              <ul className="space-y-2 text-gray-600">
+                <li className="flex items-center">
+                  <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
+                  Metro cities: 1-2 business days
+                </li>
+                <li className="flex items-center">
+                  <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
+                  Tier 1 cities: 2-3 business days
+                </li>
+                <li className="flex items-center">
+                  <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
+                  Other locations: 3-5 business days
+                </li>
+              </ul>
             </div>
-            
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse border border-gray-300">
-                <thead>
-                  <tr className="bg-gray-50">
-                    <th className="border border-gray-300 px-4 py-3 text-left font-semibold text-desi-brown">Zone</th>
-                    <th className="border border-gray-300 px-4 py-3 text-left font-semibold text-desi-brown">States/Cities</th>
-                    <th className="border border-gray-300 px-4 py-3 text-left font-semibold text-desi-brown">Delivery Time</th>
-                    <th className="border border-gray-300 px-4 py-3 text-left font-semibold text-desi-brown">Shipping Charges</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td className="border border-gray-300 px-4 py-3 font-medium">Zone 1</td>
-                    <td className="border border-gray-300 px-4 py-3">Mumbai, Delhi, Bangalore, Chennai, Kolkata, Hyderabad, Pune</td>
-                    <td className="border border-gray-300 px-4 py-3">2-3 business days</td>
-                    <td className="border border-gray-300 px-4 py-3">₹99 (Free above ₹999)</td>
-                  </tr>
-                  <tr className="bg-gray-50">
-                    <td className="border border-gray-300 px-4 py-3 font-medium">Zone 2</td>
-                    <td className="border border-gray-300 px-4 py-3">Other major cities in Maharashtra, Karnataka, Tamil Nadu, Delhi NCR</td>
-                    <td className="border border-gray-300 px-4 py-3">3-4 business days</td>
-                    <td className="border border-gray-300 px-4 py-3">₹149 (Free above ₹999)</td>
-                  </tr>
-                  <tr>
-                    <td className="border border-gray-300 px-4 py-3 font-medium">Zone 3</td>
-                    <td className="border border-gray-300 px-4 py-3">Rest of India</td>
-                    <td className="border border-gray-300 px-4 py-3">4-5 business days</td>
-                    <td className="border border-gray-300 px-4 py-3">₹199 (Free above ₹999)</td>
-                  </tr>
-                  <tr className="bg-gray-50">
-                    <td className="border border-gray-300 px-4 py-3 font-medium">Remote Areas</td>
-                    <td className="border border-gray-300 px-4 py-3">Hills stations, remote locations</td>
-                    <td className="border border-gray-300 px-4 py-3">5-7 business days</td>
-                    <td className="border border-gray-300 px-4 py-3">₹299 (Free above ₹1499)</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </section>
 
-          {/* Processing Time */}
-          <section>
-            <div className="flex items-center mb-4">
-              <Clock className="w-6 h-6 text-desi-brown mr-3" />
-              <h2 className="text-2xl font-bold text-desi-brown">Order Processing Time</h2>
+            <div className="border-l-4 border-blue-500 pl-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-3">Standard Delivery</h3>
+              <ul className="space-y-2 text-gray-600">
+                <li className="flex items-center">
+                  <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
+                  FREE on orders ₹999+
+                </li>
+                <li className="flex items-center">
+                  <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
+                  All India coverage
+                </li>
+                <li className="flex items-center">
+                  <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
+                  3-7 business days
+                </li>
+              </ul>
             </div>
-            
-            <div className="space-y-4">
-              <div className="bg-orange-50 p-4 rounded-lg border border-orange-200">
-                <h3 className="font-semibold text-desi-brown mb-2">Standard Orders</h3>
-                <p className="text-gray-700">
-                  Orders placed before 2:00 PM (IST) on business days are processed the same day. 
-                  Orders placed after 2:00 PM or on weekends/holidays are processed the next business day.
-                </p>
-              </div>
-              
-              <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                <h3 className="font-semibold text-desi-brown mb-2">Bulk Orders (5kg+)</h3>
-                <p className="text-gray-700">
-                  Large quantity orders may require additional 1-2 business days for processing 
-                  to ensure fresh packing and quality control.
-                </p>
-              </div>
-              
-              <div className="bg-green-50 p-4 rounded-lg border border-green-200">
-                <h3 className="font-semibold text-desi-brown mb-2">Custom Gift Packaging</h3>
-                <p className="text-gray-700">
-                  Orders with special gift packaging or customization require additional 
-                  1 business day for preparation.
-                </p>
-              </div>
-            </div>
-          </section>
+          </div>
+        </div>
 
-          {/* Packaging */}
-          <section>
-            <div className="flex items-center mb-4">
-              <Package className="w-6 h-6 text-desi-brown mr-3" />
-              <h2 className="text-2xl font-bold text-desi-brown">Packaging Standards</h2>
+        {/* Shipping Charges */}
+        <div className="bg-white rounded-lg shadow-md p-8 mb-8">
+          <div className="flex items-center mb-6">
+            <Package className="w-6 h-6 text-desi-gold mr-3" />
+            <h2 className="text-2xl font-bold text-gray-900">Shipping Charges</h2>
+          </div>
+          
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <thead>
+                <tr className="border-b-2 border-gray-200">
+                  <th className="py-3 px-4 text-gray-900 font-semibold">Order Value</th>
+                  <th className="py-3 px-4 text-gray-900 font-semibold">Shipping Charge</th>
+                  <th className="py-3 px-4 text-gray-900 font-semibold">Delivery Time</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="border-b border-gray-100">
+                  <td className="py-3 px-4 text-gray-600">Above ₹999</td>
+                  <td className="py-3 px-4 text-green-600 font-semibold">FREE</td>
+                  <td className="py-3 px-4 text-gray-600">3-7 business days</td>
+                </tr>
+                <tr className="border-b border-gray-100">
+                  <td className="py-3 px-4 text-gray-600">₹500 - ₹999</td>
+                  <td className="py-3 px-4 text-gray-600">₹50</td>
+                  <td className="py-3 px-4 text-gray-600">3-7 business days</td>
+                </tr>
+                <tr className="border-b border-gray-100">
+                  <td className="py-3 px-4 text-gray-600">Below ₹500</td>
+                  <td className="py-3 px-4 text-gray-600">₹80</td>
+                  <td className="py-3 px-4 text-gray-600">3-7 business days</td>
+                </tr>
+                <tr>
+                  <td className="py-3 px-4 text-gray-600">Express Delivery</td>
+                  <td className="py-3 px-4 text-gray-600">₹100 (additional)</td>
+                  <td className="py-3 px-4 text-gray-600">1-3 business days</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Packaging Information */}
+        <div className="bg-white rounded-lg shadow-md p-8 mb-8">
+          <div className="flex items-center mb-6">
+            <Shield className="w-6 h-6 text-desi-gold mr-3" />
+            <h2 className="text-2xl font-bold text-gray-900">Packaging & Protection</h2>
+          </div>
+          
+          <div className="grid md:grid-cols-2 gap-6">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-3">Premium Protection</h3>
+              <ul className="space-y-2 text-gray-600">
+                <li className="flex items-center">
+                  <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
+                  Food-grade vacuum sealing
+                </li>
+                <li className="flex items-center">
+                  <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
+                  Moisture-proof packaging
+                </li>
+                <li className="flex items-center">
+                  <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
+                  Temperature-controlled handling
+                </li>
+                <li className="flex items-center">
+                  <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
+                  Tamper-evident seals
+                </li>
+              </ul>
             </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-3">Eco-Friendly Approach</h3>
+              <ul className="space-y-2 text-gray-600">
+                <li className="flex items-center">
+                  <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
+                  100% recyclable materials
+                </li>
+                <li className="flex items-center">
+                  <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
+                  Biodegradable cushioning
+                </li>
+                <li className="flex items-center">
+                  <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
+                  Reusable containers available
+                </li>
+                <li className="flex items-center">
+                  <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
+                  Minimal plastic usage
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        {/* Coverage Areas */}
+        <div className="bg-white rounded-lg shadow-md p-8 mb-8">
+          <div className="flex items-center mb-6">
+            <MapPin className="w-6 h-6 text-desi-gold mr-3" />
+            <h2 className="text-2xl font-bold text-gray-900">Delivery Coverage</h2>
+          </div>
+          
+          <div className="grid md:grid-cols-3 gap-6 text-center">
+            <div className="bg-gray-50 rounded-lg p-6">
+              <div className="text-3xl font-bold text-desi-brown mb-2">650+</div>
+              <div className="text-gray-600">Cities & Towns</div>
+            </div>
+            <div className="bg-gray-50 rounded-lg p-6">
+              <div className="text-3xl font-bold text-desi-brown mb-2">28</div>
+              <div className="text-gray-600">States Covered</div>
+            </div>
+            <div className="bg-gray-50 rounded-lg p-6">
+              <div className="text-3xl font-bold text-desi-brown mb-2">99.9%</div>
+              <div className="text-gray-600">On-Time Delivery</div>
+            </div>
+          </div>
+
+          <div className="mt-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">We deliver to:</h3>
+            <div className="grid md:grid-cols-2 gap-4 text-gray-600">
               <div>
-                <h3 className="font-semibold text-desi-brown mb-3">Quality Assurance</h3>
-                <ul className="space-y-2 text-gray-700">
-                  <li className="flex items-start">
-                    <span className="text-desi-gold mr-2">•</span>
-                    Food-grade, airtight containers for freshness
-                  </li>
-                  <li className="flex items-start">
-                    <span className="text-desi-gold mr-2">•</span>
-                    Double-layer packaging for fragile items
-                  </li>
-                  <li className="flex items-start">
-                    <span className="text-desi-gold mr-2">•</span>
-                    Temperature-controlled packaging when needed
-                  </li>
-                  <li className="flex items-start">
-                    <span className="text-desi-gold mr-2">•</span>
-                    Tamper-evident sealing for security
-                  </li>
-                </ul>
+                <h4 className="font-medium mb-2">Metro Cities:</h4>
+                <p className="text-sm">Delhi, Mumbai, Bangalore, Chennai, Kolkata, Hyderabad, Pune, Ahmedabad</p>
               </div>
-              
               <div>
-                <h3 className="font-semibold text-desi-brown mb-3">Eco-Friendly Approach</h3>
-                <ul className="space-y-2 text-gray-700">
-                  <li className="flex items-start">
-                    <span className="text-desi-gold mr-2">•</span>
-                    Recyclable packaging materials
-                  </li>
-                  <li className="flex items-start">
-                    <span className="text-desi-gold mr-2">•</span>
-                    Minimal use of plastic
-                  </li>
-                  <li className="flex items-start">
-                    <span className="text-desi-gold mr-2">•</span>
-                    Biodegradable cushioning materials
-                  </li>
-                  <li className="flex items-start">
-                    <span className="text-desi-gold mr-2">•</span>
-                    Reusable containers for bulk orders
-                  </li>
-                </ul>
+                <h4 className="font-medium mb-2">Tier 1 & 2 Cities:</h4>
+                <p className="text-sm">All major cities and towns across India with reliable courier services</p>
               </div>
             </div>
-          </section>
+          </div>
+        </div>
 
-          {/* Delivery Partners */}
-          <section>
-            <div className="flex items-center mb-4">
-              <Shield className="w-6 h-6 text-desi-brown mr-3" />
-              <h2 className="text-2xl font-bold text-desi-brown">Delivery Partners</h2>
-            </div>
-            
-            <div className="bg-gray-50 p-6 rounded-lg">
-              <p className="text-gray-700 mb-4">
-                We partner with trusted logistics providers to ensure safe and timely delivery:
-              </p>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-                <div className="bg-white p-4 rounded-lg shadow-sm">
-                  <div className="font-semibold text-desi-brown">Blue Dart</div>
-                  <div className="text-sm text-gray-600">Express Delivery</div>
-                </div>
-                <div className="bg-white p-4 rounded-lg shadow-sm">
-                  <div className="font-semibold text-desi-brown">FedEx</div>
-                  <div className="text-sm text-gray-600">International</div>
-                </div>
-                <div className="bg-white p-4 rounded-lg shadow-sm">
-                  <div className="font-semibold text-desi-brown">DTDC</div>
-                  <div className="text-sm text-gray-600">Nationwide</div>
-                </div>
-                <div className="bg-white p-4 rounded-lg shadow-sm">
-                  <div className="font-semibold text-desi-brown">Delhivery</div>
-                  <div className="text-sm text-gray-600">Standard</div>
-                </div>
-              </div>
-            </div>
-          </section>
+        {/* Important Notes */}
+        <div className="bg-amber-50 border-l-4 border-amber-400 rounded-lg p-6 mb-8">
+          <h3 className="text-lg font-semibold text-amber-800 mb-3">Important Notes</h3>
+          <ul className="space-y-2 text-amber-700">
+            <li>• Delivery times are estimates and may vary due to weather conditions or unforeseen circumstances</li>
+            <li>• Orders placed before 2 PM are processed the same day (Monday-Saturday)</li>
+            <li>• We do not deliver on Sundays and public holidays</li>
+            <li>• Remote locations may require additional 1-2 days for delivery</li>
+            <li>• You will receive tracking information via SMS and email once your order is dispatched</li>
+          </ul>
+        </div>
 
-          {/* Special Instructions */}
-          <section>
-            <div className="flex items-center mb-4">
-              <AlertCircle className="w-6 h-6 text-desi-brown mr-3" />
-              <h2 className="text-2xl font-bold text-desi-brown">Important Notes</h2>
-            </div>
-            
-            <div className="space-y-4">
-              <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
-                <h3 className="font-semibold text-desi-brown mb-2">Delivery Attempts</h3>
-                <p className="text-gray-700 text-sm">
-                  Our delivery partners will make up to 3 delivery attempts. If unsuccessful, 
-                  the package will be held at the nearest facility for 7 days before being returned.
-                </p>
-              </div>
-              
-              <div className="bg-red-50 p-4 rounded-lg border border-red-200">
-                <h3 className="font-semibold text-desi-brown mb-2">Address Accuracy</h3>
-                <p className="text-gray-700 text-sm">
-                  Please ensure your delivery address is complete and accurate. We are not responsible 
-                  for delays or non-delivery due to incorrect or incomplete addresses.
-                </p>
-              </div>
-              
-              <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                <h3 className="font-semibold text-desi-brown mb-2">Tracking Information</h3>
-                <p className="text-gray-700 text-sm">
-                  You will receive tracking information via SMS and email once your order is dispatched. 
-                  Use this to monitor your package's journey.
-                </p>
+        {/* Contact for Shipping Help */}
+        <div className="bg-desi-brown rounded-lg p-8 text-white text-center">
+          <h2 className="text-2xl font-bold mb-4">Need Shipping Help?</h2>
+          <p className="text-lg opacity-90 mb-6">
+            Our customer service team is here to help with all your shipping questions.
+          </p>
+          <div className="grid md:grid-cols-2 gap-6 max-w-md mx-auto">
+            <div className="flex items-center justify-center space-x-3 bg-white/10 rounded-lg p-4">
+              <Phone className="w-5 h-5" />
+              <div className="text-left">
+                <div className="font-semibold">Call Us</div>
+                <div className="text-sm opacity-90">+91 98765 43210</div>
               </div>
             </div>
-          </section>
-
-          {/* Contact */}
-          <section className="border-t pt-6">
-            <h2 className="text-2xl font-bold text-desi-brown mb-4">Need Help?</h2>
-            <p className="text-gray-700 mb-4">
-              For any shipping-related queries or concerns, please contact our customer support team:
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4">
-              <div className="flex items-center space-x-2">
-                <Phone className="w-5 h-5 text-desi-brown" />
-                <span className="text-gray-700">+91 98765 43210</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Mail className="w-5 h-5 text-desi-brown" />
-                <span className="text-gray-700">support@premiumdryfruits.com</span>
+            <div className="flex items-center justify-center space-x-3 bg-white/10 rounded-lg p-4">
+              <Mail className="w-5 h-5" />
+              <div className="text-left">
+                <div className="font-semibold">Email Us</div>
+                <div className="text-sm opacity-90">support@premiumdryfruits.com</div>
               </div>
             </div>
-          </section>
+          </div>
         </div>
       </div>
     </div>

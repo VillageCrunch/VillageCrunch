@@ -356,7 +356,7 @@ const Home = () => {
 
             <Link to="/products?category=thekua" className="group relative overflow-hidden rounded-2xl shadow-lg h-64">
               <img
-                src= "/Product_Images/thekua.jpg"
+                src="/thekua.jpg"
                 alt="Thekua"
                 className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
               />

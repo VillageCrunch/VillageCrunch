@@ -4,6 +4,7 @@ import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
+import ScrollToTop from './components/ScrollToTop';
 import Home from './pages/Home';
 import Products from './pages/Products';
 import ProductDetail from './pages/ProductDetail';
@@ -20,12 +21,14 @@ import ContactUs from './pages/ContactUs';
 import ShippingPolicy from './pages/ShippingPolicy';
 import ReturnsPolicy from './pages/ReturnsPolicy';
 import Admin from './pages/Admin';
+import Wishlist from './pages/Wishlist';
 import ProtectedRoute from './components/ProtectedRoute';
 import OrdersDetail from './pages/OrderDeatail';
 
 function App() {
   return (
     <Router>
+      <ScrollToTop />
       <AuthProvider>
         <CartProvider>
           <div className="flex flex-col min-h-screen">
@@ -47,6 +50,7 @@ function App() {
                 <Route path="/orders" element={<Orders />} />
                 <Route path="/order/:id" element={<OrdersDetail />} />
                 <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+                <Route path="/wishlist" element={<ProtectedRoute><Wishlist /></ProtectedRoute>} />
                 <Route path="/about" element={<About />} />
                 <Route path="/contact" element={<ContactUs />} />
                 <Route path="/shipping-policy" element={<ShippingPolicy />} />
