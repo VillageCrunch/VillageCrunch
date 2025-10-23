@@ -258,74 +258,136 @@ const Cart = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12">
+    <div className="min-h-screen bg-gray-50 py-6 sm:py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">Shopping Cart</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6 sm:mb-8">Shopping Cart</h1>
 
-        <div className="grid lg:grid-cols-3 gap-8">
+        <div className="grid lg:grid-cols-3 gap-6 lg:gap-8">
           {/* Cart Items */}
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-2 order-2 lg:order-1">
             <div className="bg-white rounded-xl shadow-md overflow-hidden">
               {cartItems.map((item) => (
                 <div
                   key={user ? item._id : item.cartItemId}
-                  className="flex items-center p-6 border-b last:border-b-0 hover:bg-gray-50 transition"
+                  className="p-4 sm:p-6 border-b last:border-b-0 hover:bg-gray-50 transition"
                 >
-                  <Link to={`/product/${item._id}`} className="flex-shrink-0">
-                    <img
-                      src={item.image || (item.images && item.images[0]) || '/placeholder-image.jpg'}
-                      alt={item.name}
-                      className="w-24 h-24 object-cover rounded-lg"
-                    />
-                  </Link>
+                  {/* Mobile Layout (Stack Vertically) */}
+                  <div className="block sm:hidden">
+                    <div className="flex items-start space-x-4 mb-4">
+                      <Link to={`/product/${item._id}`} className="flex-shrink-0">
+                        <img
+                          src={item.image || (item.images && item.images[0]) || '/placeholder-image.jpg'}
+                          alt={item.name}
+                          className="w-20 h-20 object-cover rounded-lg"
+                        />
+                      </Link>
+                      <div className="flex-1 min-w-0">
+                        <Link
+                          to={`/product/${item._id}`}
+                          className="text-lg font-semibold text-gray-900 hover:text-desi-gold transition block truncate"
+                        >
+                          {item.name}
+                        </Link>
+                        <p className="text-sm text-gray-600 mt-1">{item.weight}</p>
+                        <p className="text-lg font-bold text-desi-brown mt-2">
+                          ₹{item.price}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => removeFromCart(user ? item._id : item.cartItemId)}
+                        className="text-red-500 hover:text-red-700 transition p-1"
+                      >
+                        <Trash2 className="w-5 h-5" />
+                      </button>
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      {/* Quantity Controls */}
+                      <div className="flex items-center space-x-2 bg-gray-100 rounded-lg p-1">
+                        <button
+                          onClick={() => updateQuantity(user ? item._id : item.cartItemId, item.quantity - 1)}
+                          className="p-2 hover:bg-gray-200 rounded transition"
+                          disabled={item.quantity <= 1}
+                        >
+                          <Minus className="w-4 h-4" />
+                        </button>
+                        <span className="w-8 text-center font-semibold">
+                          {item.quantity}
+                        </span>
+                        <button
+                          onClick={() => updateQuantity(user ? item._id : item.cartItemId, item.quantity + 1)}
+                          className="p-2 hover:bg-gray-200 rounded transition"
+                          disabled={item.quantity >= item.stock}
+                        >
+                          <Plus className="w-4 h-4" />
+                        </button>
+                      </div>
 
-                  <div className="ml-6 flex-1">
-                    <Link
-                      to={`/product/${item._id}`}
-                      className="text-lg font-semibold text-gray-900 hover:text-desi-gold transition"
-                    >
-                      {item.name}
-                    </Link>
-                    <p className="text-sm text-gray-600 mt-1">{item.weight}</p>
-                    <p className="text-lg font-bold text-desi-brown mt-2">
-                      ₹{item.price}
-                    </p>
+                      {/* Subtotal */}
+                      <div className="font-bold text-gray-900 text-lg">
+                        ₹{(item.price * item.quantity).toFixed(2)}
+                      </div>
+                    </div>
                   </div>
 
-                  <div className="flex items-center space-x-4 ml-4">
-                    {/* Quantity Controls */}
-                    <div className="flex items-center space-x-2 bg-gray-100 rounded-lg p-1">
-                      <button
-                        onClick={() => updateQuantity(user ? item._id : item.cartItemId, item.quantity - 1)}
-                        className="p-1 hover:bg-gray-200 rounded transition"
-                        disabled={item.quantity <= 1}
+                  {/* Desktop Layout (Original) */}
+                  <div className="hidden sm:flex items-center">
+                    <Link to={`/product/${item._id}`} className="flex-shrink-0">
+                      <img
+                        src={item.image || (item.images && item.images[0]) || '/placeholder-image.jpg'}
+                        alt={item.name}
+                        className="w-24 h-24 object-cover rounded-lg"
+                      />
+                    </Link>
+
+                    <div className="ml-6 flex-1">
+                      <Link
+                        to={`/product/${item._id}`}
+                        className="text-lg font-semibold text-gray-900 hover:text-desi-gold transition"
                       >
-                        <Minus className="w-4 h-4" />
-                      </button>
-                      <span className="w-8 text-center font-semibold">
-                        {item.quantity}
-                      </span>
-                      <button
-                        onClick={() => updateQuantity(user ? item._id : item.cartItemId, item.quantity + 1)}
-                        className="p-1 hover:bg-gray-200 rounded transition"
-                        disabled={item.quantity >= item.stock}
-                      >
-                        <Plus className="w-4 h-4" />
-                      </button>
+                        {item.name}
+                      </Link>
+                      <p className="text-sm text-gray-600 mt-1">{item.weight}</p>
+                      <p className="text-lg font-bold text-desi-brown mt-2">
+                        ₹{item.price}
+                      </p>
                     </div>
 
-                    {/* Subtotal */}
-                    <div className="w-24 text-right font-bold text-gray-900">
-                      ₹{(item.price * item.quantity).toFixed(2)}
-                    </div>
+                    <div className="flex items-center space-x-4 ml-4">
+                      {/* Quantity Controls */}
+                      <div className="flex items-center space-x-2 bg-gray-100 rounded-lg p-1">
+                        <button
+                          onClick={() => updateQuantity(user ? item._id : item.cartItemId, item.quantity - 1)}
+                          className="p-1 hover:bg-gray-200 rounded transition"
+                          disabled={item.quantity <= 1}
+                        >
+                          <Minus className="w-4 h-4" />
+                        </button>
+                        <span className="w-8 text-center font-semibold">
+                          {item.quantity}
+                        </span>
+                        <button
+                          onClick={() => updateQuantity(user ? item._id : item.cartItemId, item.quantity + 1)}
+                          className="p-1 hover:bg-gray-200 rounded transition"
+                          disabled={item.quantity >= item.stock}
+                        >
+                          <Plus className="w-4 h-4" />
+                        </button>
+                      </div>
 
-                    {/* Remove Button */}
-                    <button
-                      onClick={() => removeFromCart(user ? item._id : item.cartItemId)}
-                      className="text-red-500 hover:text-red-700 transition p-2"
-                    >
-                      <Trash2 className="w-5 h-5" />
-                    </button>
+                      {/* Subtotal */}
+                      <div className="w-24 text-right font-bold text-gray-900">
+                        ₹{(item.price * item.quantity).toFixed(2)}
+                      </div>
+
+                      {/* Remove Button */}
+                      <button
+                        onClick={() => removeFromCart(user ? item._id : item.cartItemId)}
+                        className="text-red-500 hover:text-red-700 transition p-2"
+                      >
+                        <Trash2 className="w-5 h-5" />
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -333,26 +395,26 @@ const Cart = () => {
 
             <Link
               to="/products"
-              className="inline-block mt-6 text-desi-gold hover:text-yellow-600 font-semibold transition"
+              className="inline-block mt-4 sm:mt-6 text-desi-gold hover:text-yellow-600 font-semibold transition text-sm sm:text-base"
             >
               ← Continue Shopping
             </Link>
           </div>
 
           {/* Order Summary */}
-          <div className="lg:col-span-1">
-            <div className="bg-white rounded-xl shadow-md p-6 sticky top-24">
-              <h2 className="text-xl font-bold text-gray-900 mb-6">Order Summary</h2>
+          <div className="lg:col-span-1 order-1 lg:order-2">
+            <div className="bg-white rounded-xl shadow-md p-4 sm:p-6 lg:sticky lg:top-24">
+              <h2 className="text-xl font-bold text-gray-900 mb-4 sm:mb-6">Order Summary</h2>
 
-              <div className="space-y-4 mb-6">
+              <div className="space-y-3 sm:space-y-4 mb-4 sm:mb-6">
                 <div className="flex justify-between text-gray-700">
-                  <span>Subtotal ({cartItems.length} items)</span>
-                  <span className="font-semibold">₹{subtotal.toFixed(2)}</span>
+                  <span className="text-sm sm:text-base">Subtotal ({cartItems.length} items)</span>
+                  <span className="font-semibold text-sm sm:text-base">₹{subtotal.toFixed(2)}</span>
                 </div>
                 
                 <div className="flex justify-between text-gray-700">
-                  <span>Shipping</span>
-                  <span className="font-semibold">
+                  <span className="text-sm sm:text-base">Shipping</span>
+                  <span className="font-semibold text-sm sm:text-base">
                     {shipping === 0 ? (
                       <span className="text-green-600">FREE</span>
                     ) : (
@@ -362,26 +424,26 @@ const Cart = () => {
                 </div>
 
                 {shipping > 0 && settings?.pricing?.shippingCharges?.standard?.freeShippingThreshold && (
-                  <div className="text-sm text-desi-gold">
+                  <div className="text-xs sm:text-sm text-desi-gold bg-yellow-50 p-2 rounded">
                     Add ₹{(settings.pricing.shippingCharges.standard.freeShippingThreshold - subtotal).toFixed(2)} more for free shipping!
                   </div>
                 )}
 
                 {settings?.pricing?.taxRate > 0 && (
                   <div className="flex justify-between py-2">
-                    <span>Tax ({settings.pricing.taxRate}% GST)</span>
-                    <span className="font-semibold">₹{Number(tax).toFixed(2)}</span>
+                    <span className="text-sm sm:text-base">Tax ({settings.pricing.taxRate}% GST)</span>
+                    <span className="font-semibold text-sm sm:text-base">₹{Number(tax).toFixed(2)}</span>
                   </div>
                 )}
 
                 {/* Promocode Discount */}
                 {appliedPromocode && (
                   <div className="flex justify-between py-2 text-green-600">
-                    <span className="flex items-center">
-                      <Tag className="w-4 h-4 mr-1" />
-                      Promocode ({appliedPromocode.code})
+                    <span className="flex items-center text-sm sm:text-base">
+                      <Tag className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                      <span className="truncate">Promocode ({appliedPromocode.code})</span>
                     </span>
-                    <span className="font-semibold">-₹{Number(promocodeDiscount).toFixed(2)}</span>
+                    <span className="font-semibold text-sm sm:text-base">-₹{Number(promocodeDiscount).toFixed(2)}</span>
                   </div>
                 )}
 
@@ -391,7 +453,7 @@ const Cart = () => {
                     <span className="text-desi-brown">₹{Number(total).toFixed(2)}</span>
                   </div>
                   {appliedPromocode && (
-                    <div className="text-sm text-green-600 mt-1">
+                    <div className="text-xs sm:text-sm text-green-600 mt-1">
                       You saved ₹{Number(promocodeDiscount).toFixed(2)} with {appliedPromocode.code}!
                     </div>
                   )}
@@ -400,67 +462,67 @@ const Cart = () => {
 
               <button
                 onClick={handleCheckout}
-                className="w-full btn-primary mb-4"
+                className="w-full btn-primary mb-4 py-3 sm:py-2 text-base sm:text-sm"
               >
                 Proceed to Checkout
               </button>
 
-              <div className="text-center text-sm text-gray-600">
+              <div className="text-center text-xs sm:text-sm text-gray-600">
                 <p>🔒 Secure checkout</p>
               </div>
 
               {/* Promocode Section */}
-              <div className="mt-6 pt-6 border-t">
-                <h3 className="font-semibold mb-3 flex items-center">
+              <div className="mt-4 sm:mt-6 pt-4 sm:pt-6 border-t">
+                <h3 className="font-semibold mb-3 flex items-center text-sm sm:text-base">
                   <Tag className="w-4 h-4 mr-2" />
                   Have a promocode?
                 </h3>
                 
                 {appliedPromocode ? (
                   // Applied Promocode Display
-                  <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-3 sm:p-4">
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center">
-                        <CheckCircle className="w-5 h-5 text-green-600 mr-2" />
-                        <div>
-                          <div className="font-semibold text-green-800">{appliedPromocode.code}</div>
-                          <div className="text-sm text-green-600">{appliedPromocode.description}</div>
+                      <div className="flex items-center min-w-0 flex-1">
+                        <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 mr-2 flex-shrink-0" />
+                        <div className="min-w-0 flex-1">
+                          <div className="font-semibold text-green-800 text-sm sm:text-base truncate">{appliedPromocode.code}</div>
+                          <div className="text-xs sm:text-sm text-green-600 truncate">{appliedPromocode.description}</div>
                         </div>
                       </div>
                       <button
                         onClick={removePromocode}
-                        className="text-red-600 hover:text-red-800 p-1"
+                        className="text-red-600 hover:text-red-800 p-1 ml-2 flex-shrink-0"
                         title="Remove promocode"
                       >
-                        <XCircle className="w-5 h-5" />
+                        <XCircle className="w-4 h-4 sm:w-5 sm:h-5" />
                       </button>
                     </div>
                   </div>
                 ) : (
                   // Promocode Input
                   <div className="space-y-3">
-                    <div className="flex space-x-2">
+                    <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
                       <input
                         type="text"
-                        placeholder="Enter promocode (e.g., SAVE20)"
+                        placeholder="Enter promocode"
                         value={promocodeInput}
                         onChange={(e) => {
                           setPromocodeInput(e.target.value.toUpperCase());
                           setPromocodeStatus(null); // Clear status when typing
                         }}
                         onKeyPress={(e) => e.key === 'Enter' && applyPromocode()}
-                        className="flex-1 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-desi-gold focus:border-desi-gold"
+                        className="flex-1 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-desi-gold focus:border-desi-gold text-sm"
                         disabled={promocodeLoading}
                       />
                       <button 
                         onClick={applyPromocode}
                         disabled={promocodeLoading || !promocodeInput.trim()}
-                        className="bg-desi-gold text-desi-brown px-4 py-2 rounded-lg hover:bg-yellow-500 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+                        className="bg-desi-gold text-desi-brown px-4 py-2 rounded-lg hover:bg-yellow-500 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2 text-sm"
                       >
                         {promocodeLoading ? (
                           <>
-                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-desi-brown"></div>
-                            <span>Validating...</span>
+                            <div className="animate-spin rounded-full h-3 w-3 sm:h-4 sm:w-4 border-b-2 border-desi-brown"></div>
+                            <span className="hidden sm:inline">Validating...</span>
                           </>
                         ) : (
                           <span>Apply</span>
@@ -470,18 +532,18 @@ const Cart = () => {
                     
                     {/* Promocode Status Message */}
                     {promocodeStatus && (
-                      <div className={`p-3 rounded-lg text-sm mt-3 ${
+                      <div className={`p-3 rounded-lg text-xs sm:text-sm mt-3 ${
                         promocodeStatus.type === 'error' 
                           ? 'bg-red-50 border border-red-200 text-red-700'
                           : 'bg-blue-50 border border-blue-200 text-blue-700'
                       }`}>
-                        <div className="flex items-center space-x-2">
+                        <div className="flex items-start space-x-2">
                           {promocodeStatus.type === 'error' ? (
-                            <XCircle className="w-4 h-4 text-red-500" />
+                            <XCircle className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
                           ) : (
-                            <CheckCircle className="w-4 h-4 text-blue-500" />
+                            <CheckCircle className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" />
                           )}
-                          <span>{promocodeStatus.message}</span>
+                          <span className="leading-relaxed">{promocodeStatus.message}</span>
                         </div>
                       </div>
                     )}
