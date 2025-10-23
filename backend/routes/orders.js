@@ -25,10 +25,28 @@ router.post('/', protect, async (req, res) => {
       shippingPrice,
       taxPrice,
       totalPrice,
+      promocode,
+      promocodeDiscount,
     } = req.body;
 
     if (!items || items.length === 0) {
       return res.status(400).json({ message: 'No order items' });
+    }
+
+    // Validate required fields
+    if (!shippingAddress || !shippingAddress.name || !shippingAddress.phone) {
+      return res.status(400).json({ message: 'Shipping address name and phone are required' });
+    }
+
+    if (!paymentInfo || !paymentInfo.method) {
+      return res.status(400).json({ message: 'Payment method is required' });
+    }
+
+    // Validate items structure
+    for (let item of items) {
+      if (!item.product || !item.quantity || !item.price) {
+        return res.status(400).json({ message: 'Invalid item structure' });
+      }
     }
 
     const orderData = {
@@ -37,10 +55,12 @@ router.post('/', protect, async (req, res) => {
       items,
       shippingAddress,
       paymentInfo,
-      itemsPrice,
-      shippingPrice,
-      taxPrice,
-      totalPrice,
+      itemsPrice: itemsPrice || 0,
+      shippingPrice: shippingPrice || 0,
+      taxPrice: taxPrice || 0,
+      totalPrice: totalPrice || 0,
+      promocode: promocode || null,
+      promocodeDiscount: promocodeDiscount || 0,
     };
 
     // Handle COD orders
@@ -48,6 +68,11 @@ router.post('/', protect, async (req, res) => {
       orderData.status = 'confirmed';
       orderData.isPaid = false;
       orderData.codVerified = false;
+    } else {
+      // Online payment - mark as paid
+      orderData.isPaid = true;
+      orderData.status = 'confirmed';
+      orderData.paidAt = new Date();
     }
 
     // ✅ Create the order
@@ -58,7 +83,10 @@ router.post('/', protect, async (req, res) => {
 
     res.status(201).json(order);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ 
+      message: error.message,
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
   }
 });
 

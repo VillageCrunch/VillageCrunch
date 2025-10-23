@@ -247,7 +247,7 @@ const ShippingPolicy = () => {
               <Mail className="w-5 h-5" />
               <div className="text-left">
                 <div className="font-semibold">Email Us</div>
-                <div className="text-sm opacity-90">support@premiumdryfruits.com</div>
+                <div className="text-sm opacity-90">villagecrunchcontact@gmail.com</div>
               </div>
             </div>
           </div>

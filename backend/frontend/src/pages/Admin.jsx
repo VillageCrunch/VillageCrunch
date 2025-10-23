@@ -200,7 +200,7 @@ const Admin = () => {
     },
     business: {
       companyName: 'Premium Dry Fruits Store',
-      email: 'info@premiumdryfruits.com',
+      email: 'villagecrunchcontact@gmail.com',
       phone: '+91 9876543210',
       address: '123 Business District, Delhi, India',
       gstNumber: '07AAACH7409R1Z5',

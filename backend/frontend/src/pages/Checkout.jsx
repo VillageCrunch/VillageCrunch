@@ -9,21 +9,49 @@ import toast from 'react-hot-toast';
 // Utility function to wait for Razorpay to load
 const waitForRazorpay = () => {
   return new Promise((resolve, reject) => {
-    const maxWaitTime = 10000; // 10 seconds
-    const checkInterval = 100; // 100ms
-    let totalWaitTime = 0;
+    // If Razorpay is already loaded, resolve immediately
+    if (window.Razorpay) {
+      resolve(true);
+      return;
+    }
 
-    const checkRazorpay = () => {
+    // Try to load Razorpay dynamically if not available
+    const loadRazorpayScript = () => {
+      return new Promise((scriptResolve, scriptReject) => {
+        const script = document.createElement('script');
+        script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+        script.onload = () => scriptResolve(true);
+        script.onerror = () => scriptReject(new Error('Failed to load Razorpay script'));
+        document.head.appendChild(script);
+      });
+    };
+
+    const maxWaitTime = 15000; // Increase to 15 seconds
+    const checkInterval = 200; // Increase check interval to 200ms
+    let totalWaitTime = 0;
+    let scriptLoadAttempted = false;
+
+    const checkRazorpay = async () => {
       if (window.Razorpay) {
         resolve(true);
       } else if (totalWaitTime >= maxWaitTime) {
-        reject(new Error('Razorpay failed to load within 10 seconds'));
+        reject(new Error('Razorpay failed to load within 15 seconds. Please check your internet connection and try again.'));
       } else {
+        // If we've waited 3 seconds and Razorpay isn't loaded, try loading it dynamically
+        if (totalWaitTime >= 3000 && !scriptLoadAttempted) {
+          scriptLoadAttempted = true;
+          try {
+            await loadRazorpayScript();
+          } catch (error) {
+            console.error('Failed to load Razorpay script dynamically:', error);
+          }
+        }
         totalWaitTime += checkInterval;
         setTimeout(checkRazorpay, checkInterval);
       }
     };
 
+    // Start checking
     checkRazorpay();
   });
 };
@@ -82,7 +110,6 @@ const Checkout = () => {
           setOrderTotals(totals);
         }
       } catch (error) {
-        console.error('Error fetching settings:', error);
         // Use fallback values if settings fetch fails
         setSettings({
           pricing: {
@@ -109,9 +136,7 @@ const Checkout = () => {
     if (!user) return;
     
     try {
-      console.log('Fetching user addresses from API...');
       const addressesData = await getUserAddresses();
-      console.log('Fetched addresses:', addressesData?.length || 0, addressesData);
       
       setAddresses(addressesData || []);
       
@@ -123,7 +148,7 @@ const Checkout = () => {
           setUseNewAddress(false);
           setShippingInfo({
             name: user.name || '',
-            phone: user.phone || '',
+            phone: defaultAddress.phone || user.phone || '',
             street: defaultAddress.street,
             city: defaultAddress.city,
             state: defaultAddress.state,
@@ -136,7 +161,7 @@ const Checkout = () => {
           setUseNewAddress(false);
           setShippingInfo({
             name: user.name || '',
-            phone: user.phone || '',
+            phone: firstAddress.phone || user.phone || '',
             street: firstAddress.street,
             city: firstAddress.city,
             state: firstAddress.state,
@@ -145,7 +170,6 @@ const Checkout = () => {
         }
       } else {
         // No saved addresses, user must enter new address
-        console.log('No saved addresses found, setting useNewAddress to true');
         setUseNewAddress(true);
         setSelectedAddress(null);
         setShippingInfo({
@@ -158,7 +182,6 @@ const Checkout = () => {
         });
       }
     } catch (error) {
-      console.error('Error fetching addresses:', error);
       // Fallback to empty state
       setAddresses([]);
       setUseNewAddress(true);
@@ -206,7 +229,7 @@ const Checkout = () => {
     setUseNewAddress(false);
     setShippingInfo({
       name: user.name || '',
-      phone: user.phone || '',
+      phone: address.phone || user.phone || '',
       street: address.street,
       city: address.city,
       state: address.state,
@@ -244,11 +267,8 @@ const Checkout = () => {
             saveAddress: true
           });
           
-          console.log('Address saved successfully:', savedAddress);
-          
           // Refresh addresses from API to get updated list
           await fetchUserAddresses();
-          console.log('Addresses refreshed after saving new address');
           
           if (savedAddress.message.includes('already exists')) {
             toast.success('Address already in your saved addresses!', { duration: 2000 });
@@ -257,7 +277,6 @@ const Checkout = () => {
           }
         } catch (addressError) {
           // Don't fail the order if address saving fails
-          console.error('Failed to save address:', addressError);
           toast.error('Address could not be saved, but order will continue');
         }
       }
@@ -298,10 +317,6 @@ const Checkout = () => {
         promocodeDiscount: promocodeDiscount,
       };
 
-      console.log('Cart items structure:', cartItems);
-      console.log('First item:', cartItems[0]);
-      console.log('First item _id:', cartItems[0]?._id);
-
       try {
         const order = await createOrder(orderData);
 
@@ -310,7 +325,6 @@ const Checkout = () => {
         toast.success('Order placed successfully! You can pay at delivery. 🎉');
         navigate(`/order/${order._id}`);
       } catch (error) {
-        console.error('Order creation error:', error.response?.data?.message || error.message);
         toast.error(error.response?.data?.message || 'Order creation failed. Please try again.');
         throw error;
       }
@@ -399,18 +413,9 @@ const Checkout = () => {
         handler: async function (response) {
           try {
             // Save new address if user is using a new address and wants to save it
-            console.log('Address saving check (online) - useNewAddress:', useNewAddress, 'saveNewAddress:', saveNewAddress);
             if (useNewAddress && saveNewAddress) {
               try {
-                console.log('Attempting to save address (online payment):', {
-                  street: shippingInfo.street,
-                  city: shippingInfo.city,
-                  state: shippingInfo.state,
-                  pincode: shippingInfo.pincode,
-                  saveAddress: true
-                });
-                
-                const savedAddress = await saveAddressFromCheckout({
+                const savedAddress = await saveAddress({
                   street: shippingInfo.street,
                   city: shippingInfo.city,
                   state: shippingInfo.state,
@@ -419,15 +424,12 @@ const Checkout = () => {
                   saveAddress: true
                 });
                 
-                console.log('Address saved successfully (online payment):', savedAddress);
-                
                 // Refresh user profile to get updated addresses
                 try {
                   const updatedProfile = await getUserProfile();
                   updateUser(updatedProfile);
-                  console.log('User profile updated with new addresses (online):', updatedProfile.addresses?.length);
                 } catch (profileError) {
-                  console.warn('Failed to refresh user profile (online):', profileError);
+                  // Silent error handling for profile refresh
                 }
                 
                 if (savedAddress.message.includes('already exists')) {
@@ -437,7 +439,6 @@ const Checkout = () => {
                 }
               } catch (addressError) {
                 // Don't fail the order if address saving fails
-                console.error('Failed to save address (online payment):', addressError);
                 toast.error('Address could not be saved, but order will continue');
               }
             }
@@ -450,32 +451,52 @@ const Checkout = () => {
             });
 
             // Create order in database
-            const orderData = {
-              items: cartItems.map(item => ({
+            // Validate cart items before creating order
+            const validatedItems = cartItems.map(item => {
+              if (!item._id || !item.quantity || !item.price) {
+                throw new Error(`Invalid item structure: ${JSON.stringify(item)}`);
+              }
+              return {
                 product: item._id,
-                name: item.name,
-                image: item.image,
-                quantity: item.quantity,
-                price: item.price,
-                weight: item.weight,
-              })),
-              shippingAddress: shippingInfo,
+                name: item.name || 'Unknown Product',
+                image: item.image || item.images?.[0] || '',
+                quantity: parseInt(item.quantity),
+                price: parseFloat(item.price),
+                weight: item.weight || '',
+              };
+            });
+            
+            // Validate shipping info
+            if (!shippingInfo.name || !shippingInfo.phone) {
+              throw new Error('Name and phone number are required for shipping');
+            }
+            
+            const orderData = {
+              items: validatedItems,
+              shippingAddress: {
+                name: shippingInfo.name.trim(),
+                phone: shippingInfo.phone.trim(),
+                street: shippingInfo.street.trim(),
+                city: shippingInfo.city.trim(),
+                state: shippingInfo.state.trim(),
+                pincode: shippingInfo.pincode.trim(),
+              },
               paymentInfo: {
                 razorpayOrderId: response.razorpay_order_id,
                 razorpayPaymentId: response.razorpay_payment_id,
                 razorpaySignature: response.razorpay_signature,
-                method: 'Razorpay',
+                method: 'Online',
               },
-              itemsPrice: subtotal,
-              shippingPrice: shipping,
-              taxPrice: tax,
-              totalPrice: total,
+              itemsPrice: parseFloat(subtotal) || 0,
+              shippingPrice: parseFloat(shipping) || 0,
+              taxPrice: parseFloat(tax) || 0,
+              totalPrice: parseFloat(total) || 0,
               promocode: appliedPromocode ? {
                 code: appliedPromocode.code,
-                discount: promocodeDiscount,
+                discount: parseFloat(promocodeDiscount) || 0,
                 description: appliedPromocode.description
               } : null,
-              promocodeDiscount: promocodeDiscount,
+              promocodeDiscount: parseFloat(promocodeDiscount) || 0,
             };
 
             const order = await createOrder(orderData);
@@ -492,8 +513,8 @@ const Checkout = () => {
             toast.success('Order placed successfully! 🎉');
             navigate(`/order/${order._id}`);
           } catch (error) {
-            console.error('Order creation error:', error);
-            toast.error('Order creation failed. Please contact support.');
+            const errorMessage = error.response?.data?.message || 'Order creation failed';
+            toast.error(`Payment successful but order creation failed: ${errorMessage}. Please contact support with payment ID: ${response.razorpay_payment_id}`);
           }
         },
         
@@ -535,7 +556,6 @@ const Checkout = () => {
 
       // Check if Razorpay is loaded
       if (!window.Razorpay) {
-        console.error('Razorpay script not loaded');
         toast.error('Payment system not available. Please refresh the page and try again.');
         setLoading(false);
         return;
@@ -549,13 +569,10 @@ const Checkout = () => {
       // Handle payment failure
       razorpay.on('payment.failed', function (response) {
         toast.error('Payment failed. Please try again.');
-        console.error('Payment failed:', response.error);
         setLoading(false);
       });
 
     } catch (error) {
-      console.error('Payment error:', error);
-      
       if (error.message && error.message.includes('Razorpay failed to load')) {
         toast.error('Payment system is loading. Please wait a moment and try again.');
       } else {
@@ -652,6 +669,32 @@ const Checkout = () => {
                       </Link>
                     </div>
                   )}
+                </div>
+              )}
+
+              {/* Selected Address Summary */}
+              {!useNewAddress && selectedAddress !== null && addresses[selectedAddress] && (
+                <div className="mb-6">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-3">Selected Delivery Address</h3>
+                  <div className="bg-desi-cream/20 border border-desi-gold rounded-lg p-4">
+                    <div className="flex items-start space-x-3">
+                      <MapPin className="w-5 h-5 text-desi-brown mt-1" />
+                      <div>
+                        <p className="font-medium text-gray-900">{addresses[selectedAddress].street}</p>
+                        <p className="text-gray-600">
+                          {addresses[selectedAddress].city}, {addresses[selectedAddress].state} - {addresses[selectedAddress].pincode}
+                        </p>
+                        <p className="text-sm text-gray-500 mt-1">
+                          Contact: {addresses[selectedAddress].phone || user.phone}
+                        </p>
+                        {addresses[selectedAddress].isDefault && (
+                          <span className="inline-block bg-desi-gold text-white text-xs px-2 py-1 rounded-full font-medium mt-1">
+                            Default Address
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
                 </div>
               )}
 
