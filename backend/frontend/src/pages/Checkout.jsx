@@ -6,6 +6,28 @@ import { createOrder, createPaymentOrder, verifyPayment, updateOrderToPaid, calc
 import { MapPin, Plus, CheckCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 
+// Utility function to wait for Razorpay to load
+const waitForRazorpay = () => {
+  return new Promise((resolve, reject) => {
+    const maxWaitTime = 10000; // 10 seconds
+    const checkInterval = 100; // 100ms
+    let totalWaitTime = 0;
+
+    const checkRazorpay = () => {
+      if (window.Razorpay) {
+        resolve(true);
+      } else if (totalWaitTime >= maxWaitTime) {
+        reject(new Error('Razorpay failed to load within 10 seconds'));
+      } else {
+        totalWaitTime += checkInterval;
+        setTimeout(checkRazorpay, checkInterval);
+      }
+    };
+
+    checkRazorpay();
+  });
+};
+
 const Checkout = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -315,6 +337,9 @@ const Checkout = () => {
     setLoading(true);
 
     try {
+      // Wait for Razorpay to load before proceeding
+      await waitForRazorpay();
+      
       // Create Razorpay order
       const paymentOrderData = await createPaymentOrder(total);
 
@@ -508,6 +533,14 @@ const Checkout = () => {
         }
       };
 
+      // Check if Razorpay is loaded
+      if (!window.Razorpay) {
+        console.error('Razorpay script not loaded');
+        toast.error('Payment system not available. Please refresh the page and try again.');
+        setLoading(false);
+        return;
+      }
+
       const razorpay = new window.Razorpay(options);
       
       // Open Razorpay checkout
@@ -522,7 +555,13 @@ const Checkout = () => {
 
     } catch (error) {
       console.error('Payment error:', error);
-      toast.error('Payment initialization failed. Please try again.');
+      
+      if (error.message && error.message.includes('Razorpay failed to load')) {
+        toast.error('Payment system is loading. Please wait a moment and try again.');
+      } else {
+        toast.error('Payment initialization failed. Please try again.');
+      }
+      
       setLoading(false);
     } finally {
       // Reset loading if payment modal is dismissed
