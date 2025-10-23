@@ -52,7 +52,7 @@ const Wishlist = () => {
       image: product.image || product.images?.[0],
       weight: product.weight
     });
-    toast.success(`${product.name} added to cart!`);
+    toast.success('Added to cart', { duration: 1500 });
   };
 
   if (!user) {

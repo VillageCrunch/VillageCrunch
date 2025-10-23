@@ -185,30 +185,22 @@ router.put('/:addressId/default', protect, async (req, res) => {
 // 🧩 SAVE ADDRESS FROM CHECKOUT (Auto-save new addresses)
 router.post('/save-from-checkout', protect, async (req, res) => {
   try {
-    console.log('Save address from checkout - Request body:', req.body);
-    console.log('Save address from checkout - User:', req.user?._id);
-    
     const { street, city, state, pincode, phone, saveAddress = true } = req.body;
 
     // If user doesn't want to save address, just return success
     if (!saveAddress) {
-      console.log('User opted not to save address');
       return res.json({ message: 'Address not saved as requested' });
     }
 
     // Validate required fields (phone is optional for checkout compatibility)
     if (!street || !city || !state || !pincode) {
-      console.log('Missing required fields:', { street, city, state, pincode, phone });
       return res.status(400).json({ message: 'All address fields are required' });
     }
 
     const user = await User.findById(req.user._id);
     if (!user) {
-      console.log('User not found:', req.user._id);
       return res.status(404).json({ message: 'User not found' });
     }
-
-    console.log('Current user addresses:', user.addresses.length);
 
     // Check if this address already exists
     const existingAddress = user.addresses.find(addr => 
@@ -220,7 +212,6 @@ router.post('/save-from-checkout', protect, async (req, res) => {
     );
 
     if (existingAddress) {
-      console.log('Address already exists');
       return res.json({ 
         message: 'Address already exists in saved addresses',
         address: existingAddress
@@ -237,12 +228,8 @@ router.post('/save-from-checkout', protect, async (req, res) => {
       isDefault: user.addresses.length === 0 // Only default if it's the first address
     };
 
-    console.log('Adding new address:', newAddress);
-
     user.addresses.push(newAddress);
     await user.save();
-
-    console.log('Address saved successfully. Total addresses now:', user.addresses.length);
 
     res.status(201).json({
       message: 'Address saved successfully for future use',
@@ -250,7 +237,6 @@ router.post('/save-from-checkout', protect, async (req, res) => {
       addresses: user.addresses
     });
   } catch (error) {
-    console.error('Error saving address from checkout:', error);
     res.status(500).json({ message: error.message });
   }
 });

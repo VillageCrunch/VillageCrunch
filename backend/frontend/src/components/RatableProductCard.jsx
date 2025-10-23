@@ -91,7 +91,7 @@ const RatableProductCard = ({ product, orderId }) => {
     e.preventDefault();
     e.stopPropagation();
     addToCart(product);
-    toast.success(`${product.name} added to cart!`);
+    toast.success('Added to cart', { duration: 1500 });
   };
 
   return (

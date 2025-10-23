@@ -135,7 +135,7 @@ const ProductDetail = () => {
         setProduct(data);
         return;
       } catch (error) {
-        console.log('Product not found in backend, checking local products...');
+        // Try local products as fallback
       }
       
       // If not found in backend, try to find in local products by generated ID
@@ -178,7 +178,7 @@ const ProductDetail = () => {
     for (let i = 0; i < quantity; i++) {
       addToCart(product);
     }
-    toast.success(`${product.name} added to cart!`);
+    toast.success('Added to cart', { duration: 1500 });
   };
 
   const handleToggleWishlist = async () => {

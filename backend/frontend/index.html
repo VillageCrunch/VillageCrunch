@@ -9,8 +9,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Load Razorpay script early to prevent loading issues -->
-    <script src="https://checkout.razorpay.com/v1/checkout.js" async defer></script>
+    <!-- Load Razorpay script synchronously to ensure it's available -->
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
   </head>
   <body>
     <div id="root"></div>

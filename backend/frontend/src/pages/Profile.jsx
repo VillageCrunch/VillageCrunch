@@ -53,12 +53,9 @@ const Profile = () => {
 
   const fetchUserAddresses = async () => {
     try {
-      console.log('Fetching user addresses from API...');
       const addressesData = await getUserAddresses();
-      console.log('Fetched addresses:', addressesData?.length || 0, addressesData);
       setAddresses(addressesData || []);
     } catch (error) {
-      console.error('Failed to fetch addresses:', error);
       setAddresses([]);
     }
   };
@@ -68,7 +65,7 @@ const Profile = () => {
       const stats = await getUserStats();
       setUserStats(stats);
     } catch (error) {
-      console.error('Failed to fetch user stats:', error);
+      // Silent error handling for stats
     }
   };
 

@@ -86,7 +86,7 @@ export const CartProvider = ({ children }) => {
         setLoading(true);
         const result = await apiAddToCart(product._id, quantity);
         setCartItems(result.cart.items || []);
-        toast.success(`${product.name} added to cart!`);
+        toast.success('Added to cart', { duration: 1500 });
       } catch (error) {
         console.error('Error adding to cart:', error);
         toast.error(error.response?.data?.message || 'Failed to add item to cart');
@@ -102,7 +102,7 @@ export const CartProvider = ({ children }) => {
           cartItemId: `${product._id}_${timestamp}`,
           quantity
         };
-        toast.success('Added to cart');
+        toast.success('Added to cart', { duration: 1500 });
         return [...prev, newItem];
       });
     }

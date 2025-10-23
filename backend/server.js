@@ -21,6 +21,7 @@ app.use(
   cors({
     origin: [
       'http://localhost:5173',       // local dev
+      'http://192.168.1.2:5173',     // network access
       'https://villagecrunch.me',    // production
       process.env.FRONTEND_URL
     ].filter(Boolean),
