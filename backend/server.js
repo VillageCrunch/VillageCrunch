@@ -12,7 +12,24 @@ const app = express();
 connectDB();
 
 // --- Middleware ---
-app.use(helmet());
+// Use helmet but customize Content Security Policy to allow Razorpay script
+app.use(
+  helmet({
+    // Keep default protections, but override CSP
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'", "https://checkout.razorpay.com"],
+        scriptSrcElem: ["'self'", "https://checkout.razorpay.com"],
+        connectSrc: ["'self'", 'https://api.razorpay.com'],
+        frameSrc: ["'self'", 'https://checkout.razorpay.com'],
+        imgSrc: ["'self'", 'data:', 'https://*'],
+        styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+        fontSrc: ["'self'", 'https://fonts.gstatic.com', 'data:'],
+      }
+    }
+  })
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
