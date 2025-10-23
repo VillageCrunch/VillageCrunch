@@ -56,6 +56,8 @@ const Products = () => {
     } else {
       setSearchParams({});
     }
+    // Scroll to top when category changes
+    window.scrollTo(0, 0);
   };
 
   const handleSearch = (e) => {

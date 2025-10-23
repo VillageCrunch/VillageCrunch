@@ -129,10 +129,21 @@ const RateProducts = () => {
     <div className="min-h-screen bg-gray-50 py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Rate Your Purchased Products</h1>
-          <p className="text-gray-600">
-            Help other customers by rating products you've received. Your feedback matters!
-          </p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-4 flex items-center">
+            <Star className="w-8 h-8 text-desi-gold mr-3" />
+            Rate Your Products
+          </h1>
+          <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-xl p-6">
+            <h2 className="text-xl font-semibold text-gray-800 mb-3 flex items-center">
+              🍯 Share Your Experience After Enjoying Our Products
+            </h2>
+            <p className="text-gray-700 mb-2">
+              <strong>Perfect time to review:</strong> After you've consumed and enjoyed our dry fruits, makhana, or thekua!
+            </p>
+            <p className="text-gray-600 text-sm">
+              ✨ Your honest feedback helps other customers make informed choices and helps us maintain our quality standards.
+            </p>
+          </div>
         </div>
 
         {deliveredProducts.length === 0 ? (
@@ -174,12 +185,21 @@ const RateProducts = () => {
                   </Link>
 
                   <p className="text-sm text-gray-600 mb-2">{product.weight}</p>
-                  <p className="text-xs text-gray-500 mb-4">
+                  <p className="text-xs text-gray-500 mb-2">
                     Delivered: {new Date(product.orderDate).toLocaleDateString()}
                   </p>
+                  
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-4">
+                    <p className="text-xs text-green-700 font-medium mb-1">
+                      🍽️ Have you enjoyed this product?
+                    </p>
+                    <p className="text-xs text-green-600">
+                      Rate it after consumption to help others!
+                    </p>
+                  </div>
 
                   <div className="space-y-3">
-                    <p className="text-sm font-medium text-desi-brown">Rate this product:</p>
+                    <p className="text-sm font-medium text-desi-brown">Your rating:</p>
                     <StarRating
                       productId={product._id}
                       onRate={handleQuickRating}

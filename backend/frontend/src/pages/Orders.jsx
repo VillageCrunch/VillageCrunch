@@ -208,7 +208,16 @@ const Orders = () => {
   return (
     <div className="min-h-screen bg-gray-50 py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">My Orders</h1>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
+          <h1 className="text-3xl font-bold text-gray-900">My Orders</h1>
+          <Link 
+            to="/rate-products"
+            className="bg-desi-gold text-desi-brown px-6 py-3 rounded-lg hover:bg-yellow-500 transition transform hover:scale-105 flex items-center space-x-2 font-semibold"
+          >
+            <Star className="w-5 h-5" />
+            <span>Rate Your Products</span>
+          </Link>
+        </div>
 
         {orders.length === 0 ? (
           <div className="text-center py-20 bg-white rounded-xl shadow-md">
@@ -255,6 +264,21 @@ const Orders = () => {
                     </span>
                   </div>
                 </div>
+
+                {/* Consumption Reminder for Delivered Orders */}
+                {order.status === 'delivered' && (
+                  <div className="bg-gradient-to-r from-green-50 to-blue-50 border-l-4 border-green-400 mx-6 p-4">
+                    <div className="flex items-center space-x-2">
+                      <span className="text-2xl">🍯</span>
+                      <div>
+                        <p className="text-sm font-semibold text-green-700">Order Delivered Successfully!</p>
+                        <p className="text-xs text-green-600">
+                          Rate your products after enjoying them to help other customers make informed choices!
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 <div className="p-6">
                   <div className="space-y-4 mb-6">

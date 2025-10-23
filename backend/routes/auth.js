@@ -107,32 +107,74 @@ router.post('/admin/login', async (req, res) => {
 
 // 🧩 PROFILE (Private)
 router.get('/profile', protect, async (req, res) => {
-  const user = await User.findById(req.user._id).select('-password');
+  const user = await User.findById(req.user._id).select('-password').populate('wishlist');
   res.json(user);
+});
+
+// 🧩 GET USER STATS (Private)
+router.get('/stats', protect, async (req, res) => {
+  try {
+    const Order = require('../models/Order');
+    
+    // Count total orders for the user
+    const totalOrders = await Order.countDocuments({ user: req.user._id });
+    
+    // Get user with wishlist
+    const user = await User.findById(req.user._id).populate('wishlist');
+    
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    
+    res.json({
+      totalOrders,
+      totalAddresses: user.addresses?.length || 0,
+      wishlistCount: user.wishlist?.length || 0,
+      memberSince: user.createdAt
+    });
+  } catch (error) {
+    console.error('Stats fetch error:', error.message);
+    res.status(500).json({ message: error.message });
+  }
 });
 
 // 🧩 UPDATE PROFILE (Private)
 router.put('/profile', protect, async (req, res) => {
-  const user = await User.findById(req.user._id);
+  try {
+    const user = await User.findById(req.user._id);
 
-  if (!user) return res.status(404).json({ message: 'User not found' });
+    if (!user) return res.status(404).json({ message: 'User not found' });
 
-  user.name = req.body.name || user.name;
-  user.email = req.body.email || user.email;
-  user.phone = req.body.phone || user.phone;
-  if (req.body.addresses) user.addresses = req.body.addresses;
-  if (req.body.password) user.password = req.body.password;
+    user.name = req.body.name || user.name;
+    user.email = req.body.email || user.email;
+    user.phone = req.body.phone || user.phone;
+    
+    // Handle addresses with phone number validation
+    if (req.body.addresses) {
+      // Ensure all addresses have phone numbers
+      const addressesWithPhone = req.body.addresses.map(address => ({
+        ...address,
+        phone: address.phone || user.phone // Use address phone or fallback to user phone
+      }));
+      user.addresses = addressesWithPhone;
+    }
+    
+    if (req.body.password) user.password = req.body.password;
 
-  const updatedUser = await user.save();
-  res.json({
-    _id: updatedUser._id,
-    name: updatedUser.name,
-    email: updatedUser.email,
-    phone: updatedUser.phone,
-    role: updatedUser.role,
-    addresses: updatedUser.addresses,
-    token: generateToken(updatedUser._id),
-  });
+    const updatedUser = await user.save();
+    res.json({
+      _id: updatedUser._id,
+      name: updatedUser.name,
+      email: updatedUser.email,
+      phone: updatedUser.phone,
+      role: updatedUser.role,
+      addresses: updatedUser.addresses,
+      token: generateToken(updatedUser._id),
+    });
+  } catch (error) {
+    console.error('Profile update error:', error.message);
+    res.status(500).json({ message: error.message });
+  }
 });
 
 // 🧩 GET ALL USERS (Admin only)
