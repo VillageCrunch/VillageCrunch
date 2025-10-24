@@ -262,131 +262,91 @@ const Cart = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6 sm:mb-8">Shopping Cart</h1>
 
-        <div className="grid lg:grid-cols-3 gap-6 lg:gap-8">
-          {/* Cart Items */}
-          <div className="lg:col-span-2 order-2 lg:order-1">
+        <div className="flex flex-col lg:grid lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
+          
+
+          
+          {/* Cart Items - Shows second on mobile */}
+          <div className="lg:col-span-2 lg:order-1 order-2">
             <div className="bg-white rounded-xl shadow-md overflow-hidden">
               {cartItems.map((item) => (
                 <div
                   key={user ? item._id : item.cartItemId}
-                  className="p-4 sm:p-6 border-b last:border-b-0 hover:bg-gray-50 transition"
+                  className="p-3 md:p-6 border-b last:border-b-0 hover:bg-gray-50 transition"
                 >
-                  {/* Mobile Layout (Stack Vertically) */}
-                  <div className="block sm:hidden">
-                    <div className="flex items-start space-x-4 mb-4">
+                  {/* Mobile-First Responsive Layout */}
+                  <div className="space-y-3 md:space-y-0 md:flex md:items-center">
+                    
+                    {/* Product Image and Info Section */}
+                    <div className="flex items-start space-x-3 md:space-x-4 flex-1">
                       <Link to={`/product/${item._id}`} className="flex-shrink-0">
                         <img
                           src={item.image || (item.images && item.images[0]) || '/placeholder-image.jpg'}
                           alt={item.name}
-                          className="w-20 h-20 object-cover rounded-lg"
+                          className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 object-cover rounded-lg"
                         />
                       </Link>
+                      
                       <div className="flex-1 min-w-0">
                         <Link
                           to={`/product/${item._id}`}
-                          className="text-lg font-semibold text-gray-900 hover:text-desi-gold transition block truncate"
+                          className="text-sm sm:text-base md:text-lg font-semibold text-gray-900 hover:text-desi-gold transition block"
                         >
-                          {item.name}
+                          <span className="line-clamp-2">{item.name}</span>
                         </Link>
-                        <p className="text-sm text-gray-600 mt-1">{item.weight}</p>
-                        <p className="text-lg font-bold text-desi-brown mt-2">
+                        <p className="text-xs sm:text-sm text-gray-600 mt-1">{item.weight}</p>
+                        <p className="text-sm sm:text-base md:text-lg font-bold text-desi-brown mt-1">
                           ₹{item.price}
                         </p>
+                        
+                        {/* Mobile: Show item subtotal under product info */}
+                        <p className="text-sm font-semibold text-gray-700 mt-2 md:hidden">
+                          Subtotal: ₹{(item.price * item.quantity).toFixed(2)}
+                        </p>
                       </div>
+                      
+                      {/* Remove button - always visible on the right */}
                       <button
                         onClick={() => removeFromCart(user ? item._id : item.cartItemId)}
-                        className="text-red-500 hover:text-red-700 transition p-1"
+                        className="text-red-500 hover:text-red-700 transition p-1 flex-shrink-0"
+                        aria-label="Remove item"
                       >
-                        <Trash2 className="w-5 h-5" />
+                        <Trash2 className="w-4 h-4 sm:w-5 sm:h-5" />
                       </button>
                     </div>
-                    
-                    <div className="flex items-center justify-between">
+
+                    {/* Quantity Controls and Desktop Subtotal */}
+                    <div className="flex items-center justify-between md:justify-end md:space-x-6 md:ml-4">
+                      
                       {/* Quantity Controls */}
-                      <div className="flex items-center space-x-2 bg-gray-100 rounded-lg p-1">
+                      <div className="flex items-center space-x-1 sm:space-x-2 bg-gray-100 rounded-lg p-1">
                         <button
                           onClick={() => updateQuantity(user ? item._id : item.cartItemId, item.quantity - 1)}
-                          className="p-2 hover:bg-gray-200 rounded transition"
+                          className="p-1 sm:p-2 hover:bg-gray-200 rounded transition flex-shrink-0"
                           disabled={item.quantity <= 1}
+                          aria-label="Decrease quantity"
                         >
-                          <Minus className="w-4 h-4" />
+                          <Minus className="w-3 h-3 sm:w-4 sm:h-4" />
                         </button>
-                        <span className="w-8 text-center font-semibold">
+                        <span className="w-6 sm:w-8 text-center font-semibold text-sm sm:text-base">
                           {item.quantity}
                         </span>
                         <button
                           onClick={() => updateQuantity(user ? item._id : item.cartItemId, item.quantity + 1)}
-                          className="p-2 hover:bg-gray-200 rounded transition"
+                          className="p-1 sm:p-2 hover:bg-gray-200 rounded transition flex-shrink-0"
                           disabled={item.quantity >= item.stock}
+                          aria-label="Increase quantity"
                         >
-                          <Plus className="w-4 h-4" />
+                          <Plus className="w-3 h-3 sm:w-4 sm:h-4" />
                         </button>
                       </div>
 
-                      {/* Subtotal */}
-                      <div className="font-bold text-gray-900 text-lg">
-                        ₹{(item.price * item.quantity).toFixed(2)}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Desktop Layout (Original) */}
-                  <div className="hidden sm:flex items-center">
-                    <Link to={`/product/${item._id}`} className="flex-shrink-0">
-                      <img
-                        src={item.image || (item.images && item.images[0]) || '/placeholder-image.jpg'}
-                        alt={item.name}
-                        className="w-24 h-24 object-cover rounded-lg"
-                      />
-                    </Link>
-
-                    <div className="ml-6 flex-1">
-                      <Link
-                        to={`/product/${item._id}`}
-                        className="text-lg font-semibold text-gray-900 hover:text-desi-gold transition"
-                      >
-                        {item.name}
-                      </Link>
-                      <p className="text-sm text-gray-600 mt-1">{item.weight}</p>
-                      <p className="text-lg font-bold text-desi-brown mt-2">
-                        ₹{item.price}
-                      </p>
-                    </div>
-
-                    <div className="flex items-center space-x-4 ml-4">
-                      {/* Quantity Controls */}
-                      <div className="flex items-center space-x-2 bg-gray-100 rounded-lg p-1">
-                        <button
-                          onClick={() => updateQuantity(user ? item._id : item.cartItemId, item.quantity - 1)}
-                          className="p-1 hover:bg-gray-200 rounded transition"
-                          disabled={item.quantity <= 1}
-                        >
-                          <Minus className="w-4 h-4" />
-                        </button>
-                        <span className="w-8 text-center font-semibold">
-                          {item.quantity}
+                      {/* Desktop Subtotal - hidden on mobile */}
+                      <div className="hidden md:block w-20 lg:w-24 text-right">
+                        <span className="font-bold text-gray-900 text-sm lg:text-base">
+                          ₹{(item.price * item.quantity).toFixed(2)}
                         </span>
-                        <button
-                          onClick={() => updateQuantity(user ? item._id : item.cartItemId, item.quantity + 1)}
-                          className="p-1 hover:bg-gray-200 rounded transition"
-                          disabled={item.quantity >= item.stock}
-                        >
-                          <Plus className="w-4 h-4" />
-                        </button>
                       </div>
-
-                      {/* Subtotal */}
-                      <div className="w-24 text-right font-bold text-gray-900">
-                        ₹{(item.price * item.quantity).toFixed(2)}
-                      </div>
-
-                      {/* Remove Button */}
-                      <button
-                        onClick={() => removeFromCart(user ? item._id : item.cartItemId)}
-                        className="text-red-500 hover:text-red-700 transition p-2"
-                      >
-                        <Trash2 className="w-5 h-5" />
-                      </button>
                     </div>
                   </div>
                 </div>
@@ -403,8 +363,8 @@ const Cart = () => {
 
           {/* Order Summary */}
           <div className="lg:col-span-1 order-1 lg:order-2">
-            <div className="bg-white rounded-xl shadow-md p-4 sm:p-6 lg:sticky lg:top-24">
-              <h2 className="text-xl font-bold text-gray-900 mb-4 sm:mb-6">Order Summary</h2>
+            <div className="bg-white rounded-xl shadow-md p-3 sm:p-4 md:p-6 lg:sticky lg:top-24">
+              <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-3 sm:mb-4 md:mb-6">Order Summary</h2>
 
               <div className="space-y-3 sm:space-y-4 mb-4 sm:mb-6">
                 <div className="flex justify-between text-gray-700">
@@ -447,8 +407,8 @@ const Cart = () => {
                   </div>
                 )}
 
-                <div className="border-t pt-4">
-                  <div className="flex justify-between text-lg font-bold text-gray-900">
+                <div className="border-t pt-3 sm:pt-4">
+                  <div className="flex justify-between text-base sm:text-lg font-bold text-gray-900">
                     <span>Total</span>
                     <span className="text-desi-brown">₹{Number(total).toFixed(2)}</span>
                   </div>
@@ -462,7 +422,7 @@ const Cart = () => {
 
               <button
                 onClick={handleCheckout}
-                className="w-full btn-primary mb-4 py-3 sm:py-2 text-base sm:text-sm"
+                className="w-full btn-primary mb-3 sm:mb-4 py-3 sm:py-2 text-base font-semibold"
               >
                 Proceed to Checkout
               </button>
