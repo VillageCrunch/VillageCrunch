@@ -84,10 +84,13 @@ const Footer = () => {
           <div>
             <h4 className="text-lg font-semibold mb-4 text-desi-gold">Contact Us</h4>
             <ul className="space-y-3">
+              {/* Address commented out as requested */}
+              {/* 
               <li className="flex items-start space-x-2 text-sm">
                 <MapPin className="w-5 h-5 flex-shrink-0 mt-0.5" />
                 <span>123 Market Street, Patna, Bihar, India</span>
               </li>
+              */}
               <li className="flex items-center space-x-2 text-sm">
                 <Phone className="w-5 h-5 flex-shrink-0" />
                 <span>+916203009518</span>

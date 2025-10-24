@@ -102,7 +102,8 @@ const ContactUs = () => {
                   </div>
                 </div>
 
-                {/* Address */}
+                {/* Address - Commented out as requested */}
+                {/* 
                 <div className="flex items-start space-x-4">
                   <div className="bg-desi-gold p-3 rounded-lg">
                     <MapPin className="w-6 h-6 text-desi-brown" />
@@ -117,6 +118,7 @@ const ContactUs = () => {
                     <p className="text-sm text-gray-500 mt-1">Open Mon-Sat, 10 AM - 7 PM</p>
                   </div>
                 </div>
+                */}
               </div>
             </div>
 
