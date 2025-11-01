@@ -185,8 +185,8 @@ const products = [
     "category": "thekua",
     "price": 199,
     "originalPrice": 249,
-    "image": "/Product_Images/thekua.jpg",
-    "images": ["/Product_Images/thekua.jpg"],
+    "image": "/thekua.jpg",
+    "images": ["/thekua.jpg"],
     "weight": "500g",
     "stock": 120,
     "featured": true,
@@ -200,6 +200,52 @@ const products = [
       "Long shelf life"
     ],
     "ingredients": ["Wheat Flour", "Jaggery", "Pure Ghee", "Cardamom", "Fennel Seeds"]
+  },
+  {
+    "name": "Dry Fruits Thekua",
+    "description": "Premium Bihari thekua enriched with mixed dry fruits including almonds, cashews, and raisins. Traditional recipe with a nutritious twist. Perfect for special occasions and gifting.",
+    "category": "thekua",
+    "price": 299,
+    "originalPrice": 349,
+    "image": "/thekua.jpg",
+    "images": ["/thekua.jpg"],
+    "weight": "500g",
+    "stock": 85,
+    "featured": true,
+    "rating": 4.8,
+    "reviews": [],
+    "benefits": [
+      "Rich in dry fruits and nuts",
+      "Traditional Bihari recipe",
+      "Made with pure jaggery",
+      "Perfect for gifting",
+      "High nutritional value",
+      "Crunchy texture"
+    ],
+    "ingredients": ["Wheat Flour", "Jaggery", "Pure Ghee", "Almonds", "Cashews", "Raisins", "Cardamom", "Fennel Seeds"]
+  },
+  {
+    "name": "Jaggery Thekua",
+    "description": "Pure jaggery-sweetened Bihari thekua made with the finest quality gur. Rich, deep flavor with traditional taste. Completely natural with no added sugar or artificial sweeteners.",
+    "category": "thekua",
+    "price": 229,
+    "originalPrice": 279,
+    "image": "/thekua.jpg",
+    "images": ["/thekua.jpg"],
+    "weight": "500g",
+    "stock": 95,
+    "featured": false,
+    "rating": 4.7,
+    "reviews": [],
+    "benefits": [
+      "Made with pure jaggery",
+      "No refined sugar",
+      "Rich in iron and minerals",
+      "Traditional authentic taste",
+      "Natural sweetness",
+      "Healthy alternative to sweets"
+    ],
+    "ingredients": ["Wheat Flour", "Pure Jaggery", "Pure Ghee", "Cardamom", "Fennel Seeds", "Coconut"]
   },
   {
     "name": "Pure Natural Makhana (Lotus Seeds)",
