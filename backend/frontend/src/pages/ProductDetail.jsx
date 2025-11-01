@@ -109,11 +109,27 @@ const ProductDetail = () => {
       setUserOrders(orders);
       
       // Check if user has purchased this product and it's delivered
-      const hasPurchased = orders.some(order => 
+      const hasPurchased = Array.isArray(orders) && orders.some(order => 
+        order && 
         order.status === 'delivered' && 
+        Array.isArray(order.items) && 
         order.items.some(item => {
-          const itemProductId = item.product._id || item.product;
-          const currentProductId = product._id || id;
+          // Add comprehensive null checks
+          if (!item || !item.product) {
+            return false;
+          }
+          
+          // Get product ID safely
+          let itemProductId;
+          if (typeof item.product === 'object' && item.product._id) {
+            itemProductId = item.product._id;
+          } else if (typeof item.product === 'string') {
+            itemProductId = item.product;
+          } else {
+            return false;
+          }
+          
+          const currentProductId = product?._id || id;
           return itemProductId === currentProductId;
         })
       );
@@ -122,6 +138,7 @@ const ProductDetail = () => {
       setCanReview(hasPurchased);
     } catch (error) {
       console.error('Error checking review eligibility:', error);
+      setCanReview(false); // Set to false on error to be safe
     }
   };
 

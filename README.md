@@ -293,10 +293,9 @@ npm run build
 5. Cheese & Herbs Makhana
 
 ### Thekua Category
-1. Traditional Bihari Thekua
-2. Jaggery Thekua
-3. Dry Fruit Thekua
-4. Festival Special Thekua
+1. Traditional Bihari Thekua ✅
+2. Dry Fruits Thekua ✅
+3. Jaggery Thekua ✅
 
 ### Combo Packs
 1. Dry Fruits Gift Box
