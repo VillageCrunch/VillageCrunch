@@ -9,7 +9,13 @@ const { protect, admin } = require('../middleware/auth');
 // ✅ Configure multer for image upload
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    const uploadPath = path.join(__dirname, '../../frontend/public/Product_Images');
+    // Determine upload path based on route
+    let uploadPath;
+    if (req.path.includes('/reviews/upload-images')) {
+      uploadPath = path.join(__dirname, '../../frontend/public/Review_Images');
+    } else {
+      uploadPath = path.join(__dirname, '../../frontend/public/Product_Images');
+    }
     
     // Create directory if it doesn't exist
     if (!fs.existsSync(uploadPath)) {
@@ -22,7 +28,8 @@ const storage = multer.diskStorage({
     // Generate unique filename
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
     const extension = path.extname(file.originalname);
-    cb(null, file.fieldname + '-' + uniqueSuffix + extension);
+    const prefix = req.path.includes('/reviews/upload-images') ? 'review' : 'product';
+    cb(null, prefix + '-' + uniqueSuffix + extension);
   }
 });
 
@@ -284,7 +291,7 @@ router.delete('/:id', protect, admin, async (req, res) => {
 // @access  Private
 router.post('/:id/reviews', protect, async (req, res) => {
   try {
-    const { rating, comment } = req.body;
+    const { rating, comment, images = [] } = req.body;
     const product = await Product.findById(req.params.id);
 
     if (!product) {
@@ -316,6 +323,9 @@ router.post('/:id/reviews', protect, async (req, res) => {
       if (comment) {
         product.reviews[existingReviewIndex].comment = comment;
       }
+      if (images && images.length > 0) {
+        product.reviews[existingReviewIndex].images = images;
+      }
       product.reviews[existingReviewIndex].updatedAt = new Date();
     } else {
       // Create new review
@@ -324,6 +334,10 @@ router.post('/:id/reviews', protect, async (req, res) => {
         name: req.user.name,
         rating: Number(rating),
         comment: comment || '',
+        images: images || [],
+        verified: true,
+        helpful: 0,
+        helpfulUsers: []
       };
       product.reviews.push(review);
     }
@@ -339,6 +353,134 @@ router.post('/:id/reviews', protect, async (req, res) => {
     res.status(201).json({ message });
   } catch (error) {
     console.error('Error adding/updating review:', error);
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// @route   POST /api/products/reviews/upload-images
+// @desc    Upload review images
+// @access  Private
+router.post('/reviews/upload-images', protect, upload.array('images', 5), async (req, res) => {
+  try {
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({ message: 'No images uploaded' });
+    }
+
+    const imageUrls = req.files.map(file => `/Review_Images/${file.filename}`);
+    
+    res.status(200).json({ 
+      message: 'Images uploaded successfully',
+      images: imageUrls
+    });
+  } catch (error) {
+    console.error('Error uploading review images:', error);
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// @route   POST /api/products/:id/reviews/:reviewId/helpful
+// @desc    Mark review as helpful or unhelpful
+// @access  Private
+router.post('/:id/reviews/:reviewId/helpful', protect, async (req, res) => {
+  try {
+    const { helpful } = req.body; // true for helpful, false for unhelpful
+    const product = await Product.findById(req.params.id);
+
+    if (!product) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+
+    const review = product.reviews.id(req.params.reviewId);
+    if (!review) {
+      return res.status(404).json({ message: 'Review not found' });
+    }
+
+    // Check if user already voted
+    const userVoteIndex = review.helpfulUsers.indexOf(req.user._id);
+    
+    if (helpful && userVoteIndex === -1) {
+      // Add helpful vote
+      review.helpful += 1;
+      review.helpfulUsers.push(req.user._id);
+    } else if (!helpful && userVoteIndex !== -1) {
+      // Remove helpful vote
+      review.helpful -= 1;
+      review.helpfulUsers.pull(req.user._id);
+    }
+
+    await product.save();
+    
+    res.status(200).json({ 
+      message: helpful ? 'Marked as helpful' : 'Removed helpful vote',
+      helpful: review.helpful
+    });
+  } catch (error) {
+    console.error('Error updating review helpfulness:', error);
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// @route   GET /api/products/:id/reviews
+// @desc    Get all reviews for a product with pagination
+// @access  Public
+router.get('/:id/reviews', async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const sortBy = req.query.sortBy || 'newest'; // newest, oldest, helpful, rating
+
+    const product = await Product.findById(req.params.id).populate('reviews.user', 'name');
+
+    if (!product) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+
+    let sortedReviews = [...product.reviews];
+
+    // Sort reviews based on sortBy parameter
+    switch (sortBy) {
+      case 'oldest':
+        sortedReviews.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+        break;
+      case 'helpful':
+        sortedReviews.sort((a, b) => b.helpful - a.helpful);
+        break;
+      case 'rating':
+        sortedReviews.sort((a, b) => b.rating - a.rating);
+        break;
+      default: // newest
+        sortedReviews.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    }
+
+    // Pagination
+    const startIndex = (page - 1) * limit;
+    const endIndex = page * limit;
+    const paginatedReviews = sortedReviews.slice(startIndex, endIndex);
+
+    // Rating statistics
+    const ratingStats = {
+      average: product.rating,
+      total: product.reviews.length,
+      distribution: {
+        5: product.reviews.filter(r => r.rating === 5).length,
+        4: product.reviews.filter(r => r.rating === 4).length,
+        3: product.reviews.filter(r => r.rating === 3).length,
+        2: product.reviews.filter(r => r.rating === 2).length,
+        1: product.reviews.filter(r => r.rating === 1).length,
+      }
+    };
+
+    res.status(200).json({
+      reviews: paginatedReviews,
+      pagination: {
+        current: page,
+        pages: Math.ceil(product.reviews.length / limit),
+        total: product.reviews.length
+      },
+      stats: ratingStats
+    });
+  } catch (error) {
+    console.error('Error fetching reviews:', error);
     res.status(500).json({ message: error.message });
   }
 });

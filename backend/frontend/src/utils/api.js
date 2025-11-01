@@ -43,6 +43,47 @@ export const createProductReview = async (productId, review) => {
 // Alias for createProductReview
 export const createReview = createProductReview;
 
+// Upload review images
+export const uploadReviewImages = async (images) => {
+  const token = localStorage.getItem('token');
+  const formData = new FormData();
+  
+  images.forEach(image => {
+    formData.append('images', image);
+  });
+
+  const { data } = await axios.post(`${API_URL}/products/reviews/upload-images`, formData, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+  return data;
+};
+
+// Get product reviews with pagination
+export const getProductReviews = async (productId, params = {}) => {
+  const { data } = await axios.get(`${API_URL}/products/${productId}/reviews`, {
+    params
+  });
+  return data;
+};
+
+// Mark review as helpful
+export const markReviewHelpful = async (productId, reviewId, helpful) => {
+  const token = localStorage.getItem('token');
+  const { data } = await axios.post(
+    `${API_URL}/products/${productId}/reviews/${reviewId}/helpful`,
+    { helpful },
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+  return data;
+};
+
 // ✅ Orders (User)
 export const createOrder = async (orderData) => {
   const { data } = await axios.post(`${API_URL}/orders`, orderData);
