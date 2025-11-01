@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Star, Heart, Award, Truck, ChevronLeft, ChevronRight } from 'lucide-react';
 import ProductCard from '../components/ProductCard';
+import SEOHead from '../components/SEOHead';
 import { getProducts } from '../utils/api.js';
 
 const Home = () => {
@@ -128,6 +129,14 @@ const Home = () => {
 
   return (
     <div>
+      <SEOHead 
+        title="Premium Dry Fruits & Makhana Online"
+        description="Shop the finest quality dry fruits, roasted makhana, and traditional Bihari thekua at VillageCrunch. 100% natural products with fast delivery across India. Order now!"
+        keywords="buy dry fruits online, premium almonds, cashews, pistachios, walnuts, makhana online, thekua Bihar, natural dry fruits, healthy snacks"
+        url="/"
+        type="website"
+      />
+      
       {/* Hero Section */}
       <section className="relative bg-gradient-to-r from-desi-cream to-amber-50 pattern-bg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">

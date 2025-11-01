@@ -7,6 +7,7 @@ import { Star, ShoppingCart, ArrowLeft, Heart, Truck, Shield, RefreshCw, Chevron
 import toast from 'react-hot-toast';
 import ReviewForm from '../components/ReviewForm';
 import ReviewList from '../components/ReviewList';
+import SEOHead from '../components/SEOHead';
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -350,6 +351,32 @@ const ProductDetail = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
+      <SEOHead 
+        title={`${product.name} - Buy Online at VillageCrunch`}
+        description={`${product.description || `Buy premium ${product.name} online at VillageCrunch`}. Fresh, natural, and authentic quality. Price: ₹${product.price}. Fast delivery across India.`}
+        keywords={`${product.name}, buy ${product.name} online, ${product.category}, premium dry fruits, natural ${product.category}`}
+        url={`/product/${product._id}`}
+        image={product.image}
+        type="product"
+        product={{
+          name: product.name,
+          description: product.description,
+          price: product.price,
+          image: product.image,
+          category: product.category,
+          inStock: product.inStock,
+          reviews: product.reviews,
+          averageRating: product.reviews?.length > 0 ? calculateAverageRating(product.reviews) : 5,
+          _id: product._id
+        }}
+        breadcrumbs={[
+          { name: 'Home', url: '/' },
+          { name: 'Products', url: '/products' },
+          { name: product.category, url: `/products?category=${product.category}` },
+          { name: product.name, url: `/product/${product._id}` }
+        ]}
+      />
+      
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Back Button */}
         <button

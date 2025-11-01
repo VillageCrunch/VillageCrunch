@@ -1,10 +1,12 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
+import { HelmetProvider } from 'react-helmet-async';
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import ScrollToTop from './components/ScrollToTop';
+import AnalyticsSetup from './utils/analytics.jsx';
 import Home from './pages/Home';
 import Products from './pages/Products';
 import ProductDetail from './pages/ProductDetail';
@@ -27,13 +29,15 @@ import OrdersDetail from './pages/OrderDeatail';
 
 function App() {
   return (
-    <Router>
-      <ScrollToTop />
-      <AuthProvider>
-        <CartProvider>
-          <div className="flex flex-col min-h-screen">
-            <Navbar />
-            <main className="flex-grow">
+    <HelmetProvider>
+      <Router>
+        <AnalyticsSetup />
+        <ScrollToTop />
+        <AuthProvider>
+          <CartProvider>
+            <div className="flex flex-col min-h-screen">
+              <Navbar />
+              <main className="flex-grow">
               <Routes>
                 <Route path="/admin" element={<ProtectedRoute adminOnly={true}>
                   <Admin />
@@ -56,28 +60,29 @@ function App() {
                 <Route path="/shipping-policy" element={<ShippingPolicy />} />
                 <Route path="/returns-policy" element={<ReturnsPolicy />} />
               </Routes>
-            </main>
-            <Footer />
-            <Toaster
-              position="top-right"
-              toastOptions={{
-                duration: 3000,
-                style: {
-                  background: '#333',
-                  color: '#fff',
-                },
-                success: {
-                  iconTheme: {
-                    primary: '#D4AF37',
-                    secondary: '#fff',
+              </main>
+              <Footer />
+              <Toaster
+                position="top-right"
+                toastOptions={{
+                  duration: 3000,
+                  style: {
+                    background: '#333',
+                    color: '#fff',
                   },
-                },
-              }}
-            />
-          </div>
-        </CartProvider>
-      </AuthProvider>
-    </Router>
+                  success: {
+                    iconTheme: {
+                      primary: '#D4AF37',
+                      secondary: '#fff',
+                    },
+                  },
+                }}
+              />
+            </div>
+          </CartProvider>
+        </AuthProvider>
+      </Router>
+    </HelmetProvider>
   );
 }
 
