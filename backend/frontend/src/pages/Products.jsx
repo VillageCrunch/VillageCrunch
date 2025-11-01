@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Search } from 'lucide-react';
 import ProductCard from '../components/ProductCard';
+import SEOHead from '../components/SEOHead';
 import { getProducts, getAllProducts } from '../utils/api'; // <-- import API functions
 
 const Products = () => {
@@ -65,8 +66,48 @@ const Products = () => {
     // just updating searchTerm triggers useEffect
   };
 
+  // Dynamic SEO based on category and search
+  const getSEOData = () => {
+    if (selectedCategory && selectedCategory !== 'all') {
+      return {
+        title: `${selectedCategory.charAt(0).toUpperCase() + selectedCategory.slice(1)} - Premium Quality Online`,
+        description: `Buy premium ${selectedCategory} online at VillageCrunch. Fresh, natural, and authentic ${selectedCategory} with fast delivery across India. Shop now!`,
+        keywords: `${selectedCategory} online, buy ${selectedCategory}, premium ${selectedCategory}, natural ${selectedCategory}`,
+        url: `/products?category=${selectedCategory}`
+      };
+    } else if (searchTerm) {
+      return {
+        title: `Search Results for "${searchTerm}" - VillageCrunch Products`,
+        description: `Find ${searchTerm} and related products at VillageCrunch. Premium quality dry fruits, makhana, and traditional snacks.`,
+        keywords: `${searchTerm}, search products, dry fruits search`,
+        url: `/products?search=${searchTerm}`
+      };
+    } else {
+      return {
+        title: 'All Products - Premium Dry Fruits, Makhana & Traditional Snacks',
+        description: 'Browse our complete collection of premium dry fruits, roasted makhana, thekua, and authentic Bihari snacks. Quality guaranteed with fast delivery.',
+        keywords: 'all products, dry fruits collection, makhana varieties, thekua types, premium snacks',
+        url: '/products'
+      };
+    }
+  };
+
+  const seoData = getSEOData();
+
   return (
     <div className="min-h-screen bg-gray-50">
+      <SEOHead 
+        title={seoData.title}
+        description={seoData.description}
+        keywords={seoData.keywords}
+        url={seoData.url}
+        breadcrumbs={[
+          { name: 'Home', url: '/' },
+          { name: 'Products', url: '/products' },
+          ...(selectedCategory && selectedCategory !== 'all' ? [{ name: selectedCategory, url: `/products?category=${selectedCategory}` }] : [])
+        ]}
+      />
+      
       {/* Header */}
       <div className="bg-gradient-to-r from-desi-brown to-desi-gold text-white py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

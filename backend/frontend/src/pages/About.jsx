@@ -1,8 +1,20 @@
 import { Award, Heart, Leaf, Users } from 'lucide-react';
+import SEOHead from '../components/SEOHead';
 
 const About = () => {
   return (
     <div className="min-h-screen bg-gray-50">
+      <SEOHead 
+        title="About VillageCrunch - Premium Dry Fruits & Authentic Bihar Snacks"
+        description="Learn about VillageCrunch's journey to bring authentic Bihari dry fruits, makhana, and thekua to your doorstep. Quality, tradition, and customer satisfaction since inception."
+        keywords="VillageCrunch story, Bihar dry fruits company, authentic Indian snacks, premium quality makhana, traditional thekua makers"
+        url="/about"
+        breadcrumbs={[
+          { name: 'Home', url: '/' },
+          { name: 'About Us', url: '/about' }
+        ]}
+      />
+      
       {/* Hero Section */}
       <div className="bg-gradient-to-r from-desi-brown to-desi-gold text-white py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">

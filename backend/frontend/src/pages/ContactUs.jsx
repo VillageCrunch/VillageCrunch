@@ -2,6 +2,7 @@ import React, { useState, useContext } from 'react';
 import { toast } from 'react-hot-toast';
 import { AuthContext } from '../context/AuthContext';
 import { Mail, Phone, MapPin, Send } from 'lucide-react';
+import SEOHead from '../components/SEOHead';
 
 const ContactUs = () => {
   const { user } = useContext(AuthContext);
@@ -65,6 +66,17 @@ const ContactUs = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 py-12">
+      <SEOHead 
+        title="Contact VillageCrunch - Get in Touch for Premium Dry Fruits & Support"
+        description="Contact VillageCrunch for any queries about our premium dry fruits, makhana, and traditional snacks. Get support, ask questions, or share feedback. We're here to help!"
+        keywords="contact VillageCrunch, customer support, dry fruits help, makhana queries, product questions, customer service"
+        url="/contact"
+        breadcrumbs={[
+          { name: 'Home', url: '/' },
+          { name: 'Contact Us', url: '/contact' }
+        ]}
+      />
+      
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-12">
