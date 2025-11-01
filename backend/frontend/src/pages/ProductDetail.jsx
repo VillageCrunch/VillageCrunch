@@ -5,6 +5,8 @@ import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { Star, ShoppingCart, ArrowLeft, Heart, Truck, Shield, RefreshCw, ChevronLeft, ChevronRight } from 'lucide-react';
 import toast from 'react-hot-toast';
+import ReviewForm from '../components/ReviewForm';
+import ReviewList from '../components/ReviewList';
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -19,6 +21,7 @@ const ProductDetail = () => {
   const [userOrders, setUserOrders] = useState([]);
   const [canReview, setCanReview] = useState(false);
   const [showReviewForm, setShowReviewForm] = useState(false);
+  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
   const [reviewForm, setReviewForm] = useState({
     rating: 5,
     comment: ''
@@ -247,6 +250,24 @@ const ProductDetail = () => {
     } catch (error) {
       console.error('Error submitting review:', error);
       toast.error(error.response?.data?.message || 'Failed to submit review');
+    }
+  };
+
+  // Enhanced review submission handler for the new ReviewForm component
+  const handleEnhancedReviewSubmit = async (reviewData) => {
+    setIsSubmittingReview(true);
+    try {
+      const response = await createReview(id, reviewData);
+      const message = response.data?.message || 'Review submitted successfully!';
+      toast.success(message);
+      setShowReviewForm(false);
+      fetchProduct(); // Refresh product to show new review
+      setCanReview(false);
+    } catch (error) {
+      console.error('Error submitting review:', error);
+      toast.error(error.response?.data?.message || 'Failed to submit review');
+    } finally {
+      setIsSubmittingReview(false);
     }
   };
 
@@ -591,172 +612,29 @@ const ProductDetail = () => {
             </div>
           </div>
 
-          {/* Reviews Section */}
+          {/* Enhanced Reviews Section */}
           <div className="border-t bg-gradient-to-br from-gray-50 to-white p-8">
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h3 className="text-2xl font-bold text-desi-brown flex items-center">
-                  <Star className="w-6 h-6 text-desi-gold mr-2" />
-                  Customer Reviews
-                </h3>
-                <div className="flex items-center mt-2 text-gray-600">
-                  {product.reviews && product.reviews.length > 0 ? (
-                    <>
-                      <div className="flex text-desi-gold mr-2">
-                        {[...Array(5)].map((_, i) => (
-                          <Star
-                            key={i}
-                            className={`w-4 h-4 ${i < Math.floor(calculateAverageRating(product.reviews)) ? 'fill-current' : ''}`}
-                          />
-                        ))}
-                      </div>
-                      <span className="font-semibold text-desi-brown">{calculateAverageRating(product.reviews)}</span>
-                      <span className="mx-2">•</span>
-                      <span>{product.reviews.length} review{product.reviews.length !== 1 ? 's' : ''}</span>
-                    </>
-                  ) : (
-                    <span>No reviews yet - be the first to share your experience!</span>
-                  )}
-                </div>
-              </div>
-              {canReview && (
-                <button
-                  onClick={() => setShowReviewForm(true)}
-                  className="bg-desi-gold text-desi-brown px-6 py-3 rounded-lg hover:bg-yellow-500 transition transform hover:scale-105 flex items-center space-x-2 font-semibold"
-                >
-                  <Star className="w-4 h-4" />
-                  <span>
-                    {product?.reviews?.some(review => {
-                      const reviewUserId = review.user._id || review.user;
-                      return reviewUserId === user?._id;
-                    }) ? 'Update Review' : 'Write a Review'}
-                  </span>
-                </button>
-              )}
-            </div>
-
-            {/* Review Form */}
+            {/* Review Form Modal */}
             {showReviewForm && (
-              <div className="bg-gray-50 p-6 rounded-lg mb-6">
-                <h4 className="text-lg font-semibold mb-4">
-                  {product?.reviews?.some(review => {
+              <div className="mb-8">
+                <ReviewForm
+                  product={product}
+                  existingReview={product?.reviews?.find(review => {
                     const reviewUserId = review.user._id || review.user;
                     return reviewUserId === user?._id;
-                  }) ? 'Update Your Review' : 'Write Your Review'}
-                </h4>
-                <form onSubmit={handleReviewSubmit}>
-                  <div className="mb-4">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Rating</label>
-                    <div className="flex space-x-1">
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <button
-                          key={star}
-                          type="button"
-                          onClick={() => setReviewForm({ ...reviewForm, rating: star })}
-                          className="focus:outline-none"
-                        >
-                          <Star
-                            className={`w-6 h-6 ${star <= reviewForm.rating ? 'fill-current text-desi-gold' : 'text-gray-300'}`}
-                          />
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="mb-4">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Your Review</label>
-                    <textarea
-                      value={reviewForm.comment}
-                      onChange={(e) => setReviewForm({ ...reviewForm, comment: e.target.value })}
-                      rows={4}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-desi-gold focus:border-transparent"
-                      placeholder="Share your experience with this product..."
-                      required
-                    />
-                  </div>
-                  <div className="flex space-x-3">
-                    <button
-                      type="submit"
-                      className="bg-desi-gold text-desi-brown px-6 py-2 rounded-lg hover:bg-yellow-500 transition"
-                    >
-                      {product?.reviews?.some(review => {
-                        const reviewUserId = review.user._id || review.user;
-                        return reviewUserId === user?._id;
-                      }) ? 'Update Review' : 'Submit Review'}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setShowReviewForm(false)}
-                      className="bg-gray-300 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-400 transition"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </form>
+                  })}
+                  onSubmit={handleEnhancedReviewSubmit}
+                  onCancel={() => setShowReviewForm(false)}
+                  isSubmitting={isSubmittingReview}
+                />
               </div>
             )}
 
-            {/* Reviews List */}
-            {product.reviews && product.reviews.length > 0 ? (
-              <div className="space-y-4">
-                {product.reviews.map((review, index) => (
-                  <div key={index} className="bg-white border border-gray-100 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow">
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-12 h-12 bg-gradient-to-br from-desi-gold to-yellow-400 rounded-full flex items-center justify-center shadow-md">
-                          <span className="text-desi-brown font-bold text-lg">
-                            {review.name ? review.name.charAt(0).toUpperCase() : 'U'}
-                          </span>
-                        </div>
-                        <div>
-                          <p className="font-bold text-gray-800">{review.name || 'Anonymous Customer'}</p>
-                          <div className="flex items-center space-x-2">
-                            <div className="flex text-desi-gold">
-                              {[...Array(5)].map((_, i) => (
-                                <Star
-                                  key={i}
-                                  className={`w-4 h-4 ${i < review.rating ? 'fill-current' : ''}`}
-                                />
-                              ))}
-                            </div>
-                            <span className="text-sm font-medium text-desi-brown">
-                              ({review.rating}/5)
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <span className="text-sm text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
-                          {new Date(review.createdAt).toLocaleDateString()}
-                        </span>
-                        <div className="text-xs text-green-600 font-medium mt-1">
-                          ✅ Verified Purchase
-                        </div>
-                      </div>
-                    </div>
-                    <div className="bg-gray-50 rounded-lg p-4 border-l-4 border-desi-gold">
-                      <p className="text-gray-700 leading-relaxed italic">"{review.comment}"</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-12">
-                <div className="bg-gradient-to-br from-gray-100 to-gray-50 rounded-xl p-8 max-w-md mx-auto">
-                  <Star className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                  <h4 className="text-xl font-semibold text-gray-700 mb-2">No Reviews Yet</h4>
-                  <p className="text-gray-500 mb-4">Be the first to share your experience with this product!</p>
-                  {user ? (
-                    <p className="text-sm text-desi-brown font-medium">
-                      💡 Purchase this product to write a review
-                    </p>
-                  ) : (
-                    <p className="text-sm text-gray-500">
-                      Please login and purchase to write a review
-                    </p>
-                  )}
-                </div>
-              </div>
-            )}
+            {/* Enhanced Reviews List with Pagination and Sorting */}
+            <ReviewList 
+              productId={product._id}
+              onWriteReview={canReview ? () => setShowReviewForm(true) : null}
+            />
           </div>
 
           {/* Benefits & Ingredients */}

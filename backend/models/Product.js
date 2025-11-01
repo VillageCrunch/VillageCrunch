@@ -54,6 +54,19 @@ const productSchema = new mongoose.Schema({
     name: String,
     rating: Number,
     comment: String,
+    images: [String], // Array of review image URLs
+    helpful: {
+      type: Number,
+      default: 0
+    },
+    helpfulUsers: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
+    }],
+    verified: {
+      type: Boolean,
+      default: true // Always true for purchased products
+    },
     createdAt: {
       type: Date,
       default: Date.now,
