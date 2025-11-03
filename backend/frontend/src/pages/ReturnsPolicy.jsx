@@ -215,20 +215,16 @@ const ReturnsPolicy = () => {
           <p className="text-lg opacity-90 mb-6">
             Our customer service team is ready to assist you with any return or refund questions.
           </p>
-          <div className="grid md:grid-cols-2 gap-6 max-w-md mx-auto">
-            <div className="flex items-center justify-center space-x-3 bg-white/10 rounded-lg p-4">
-              <Phone className="w-5 h-5" />
-              <div className="text-left">
-                <div className="font-semibold">Call Us</div>
-                <div className="text-sm opacity-90">+91 98765 43210</div>
-              </div>
+          <div className="grid md:grid-cols-2 gap-6 max-w-2xl mx-auto">
+            <div className="bg-white/10 rounded-lg p-6">
+              <Phone className="w-6 h-6 mx-auto mb-3" />
+              <div className="font-semibold text-lg mb-1">Call Us</div>
+              <div className="text-base opacity-90">6203009518</div>
             </div>
-            <div className="flex items-center justify-center space-x-3 bg-white/10 rounded-lg p-4">
-              <Mail className="w-5 h-5" />
-              <div className="text-left">
-                <div className="font-semibold">Email Us</div>
-                <div className="text-sm opacity-90">villagecrunchcontact@gmail.com</div>
-              </div>
+            <div className="bg-white/10 rounded-lg p-6">
+              <Mail className="w-6 h-6 mx-auto mb-3" />
+              <div className="font-semibold text-lg mb-1">Email Us</div>
+              <div className="text-sm opacity-90 break-words">villagecrunchcontact@gmail.com</div>
             </div>
           </div>
           <div className="mt-6 text-sm opacity-75">

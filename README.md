@@ -322,7 +322,7 @@ Expiry: Any future date
 
 For issues and questions:
 - Email: support@desidelights.com
-- Phone: +91 98765 43210
+- Phone: 6203009518
 
 ## License
 

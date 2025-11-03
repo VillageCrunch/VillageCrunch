@@ -116,7 +116,7 @@ const Register = () => {
                 onChange={handleChange}
                 required
                 className="input-field"
-                placeholder="+91 98765 43210"
+                placeholder="6203009518"
               />
             </div>
 

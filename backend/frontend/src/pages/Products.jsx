@@ -109,10 +109,16 @@ const Products = () => {
       />
       
       {/* Header */}
-      <div className="bg-gradient-to-r from-desi-brown to-desi-gold text-white py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="text-4xl font-bold mb-4">Our Products</h1>
-          <p className="text-lg opacity-90">
+      <div className="bg-gradient-to-r from-desi-brown to-desi-gold text-white py-12 relative overflow-hidden">
+        {/* Decorative background pattern */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-0 left-0 w-64 h-64 bg-white rounded-full -translate-x-1/2 -translate-y-1/2"></div>
+          <div className="absolute bottom-0 right-0 w-96 h-96 bg-white rounded-full translate-x-1/3 translate-y-1/3"></div>
+        </div>
+        
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <h1 className="text-4xl font-bold mb-4 animate-fade-in-up">Our Products</h1>
+          <p className="text-lg opacity-90 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
             Discover our range of premium dry fruits, makhana, and traditional sweets
           </p>
         </div>
@@ -122,15 +128,15 @@ const Products = () => {
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Sidebar */}
           <div className="lg:w-64 flex-shrink-0">
-            <div className="bg-white rounded-xl shadow-md p-6 sticky top-24">
+            <div className="bg-white rounded-xl shadow-md p-6 sticky top-24 animate-fade-in-up border border-gray-100 hover:shadow-lg transition-shadow duration-300">
               <h3 className="font-bold text-lg mb-4 text-desi-brown">Categories</h3>
               <div className="space-y-2">
                 <button
                   onClick={() => handleCategoryChange('all')}
-                  className={`w-full text-left px-4 py-2 rounded-lg transition ${
+                  className={`w-full text-left px-4 py-2 rounded-lg transition-all duration-300 transform hover:translate-x-1 ${
                     selectedCategory === 'all'
-                      ? 'bg-desi-gold text-white'
-                      : 'hover:bg-desi-cream'
+                      ? 'bg-desi-gold text-white shadow-md'
+                      : 'hover:bg-desi-cream hover:shadow-sm'
                   }`}
                 >
                   All Products
@@ -139,10 +145,10 @@ const Products = () => {
                   <button
                     key={category}
                     onClick={() => handleCategoryChange(category)}
-                    className={`w-full text-left px-4 py-2 rounded-lg transition capitalize ${
+                    className={`w-full text-left px-4 py-2 rounded-lg transition-all duration-300 transform hover:translate-x-1 capitalize ${
                       selectedCategory === category
-                        ? 'bg-desi-gold text-white'
-                        : 'hover:bg-desi-cream'
+                        ? 'bg-desi-gold text-white shadow-md'
+                        : 'hover:bg-desi-cream hover:shadow-sm'
                     }`}
                   >
                     {category.replace('-', ' ')}
@@ -165,7 +171,7 @@ const Products = () => {
                 </div>
                 <button
                   type="submit"
-                  className="w-full mt-2 bg-desi-gold text-white py-2 rounded-lg hover:bg-yellow-600 transition"
+                  className="w-full mt-2 bg-desi-gold text-white py-2 rounded-lg hover:bg-yellow-600 transition-all duration-300 hover:shadow-md transform hover:scale-[1.02] active:scale-95"
                 >
                   Search
                 </button>
@@ -178,35 +184,53 @@ const Products = () => {
             {loading ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {[...Array(6)].map((_, i) => (
-                  <div key={i} className="bg-white rounded-xl shadow-md h-96 animate-pulse">
-                    <div className="h-64 bg-gray-300"></div>
-                    <div className="p-4">
-                      <div className="h-4 bg-gray-300 rounded mb-2"></div>
-                      <div className="h-4 bg-gray-300 rounded w-2/3"></div>
+                  <div key={i} className={`bg-white rounded-xl shadow-md h-96 overflow-hidden animate-fade-in stagger-${(i % 6) + 1}`}>
+                    <div className="h-64 skeleton"></div>
+                    <div className="p-4 space-y-3">
+                      <div className="h-4 skeleton rounded"></div>
+                      <div className="h-4 skeleton rounded w-2/3"></div>
+                      <div className="h-8 skeleton rounded w-1/3"></div>
+                      <div className="h-10 skeleton rounded"></div>
                     </div>
                   </div>
                 ))}
               </div>
             ) : products.length > 0 ? (
               <>
-                <div className="mb-6 text-gray-600">
-                  Showing {products.length} product{products.length !== 1 ? 's' : ''}
+                <div className="mb-6 text-gray-600 animate-fade-in">
+                  Showing <span className="font-semibold text-desi-brown">{products.length}</span> product{products.length !== 1 ? 's' : ''}
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {products.map((product) => (
-                    <ProductCard key={product._id} product={product} />
+                  {products.map((product, index) => (
+                    <div 
+                      key={product._id} 
+                      className={`animate-fade-in-up stagger-${(index % 6) + 1}`}
+                      style={{ animationDelay: `${index * 0.1}s` }}
+                    >
+                      <ProductCard product={product} />
+                    </div>
                   ))}
                 </div>
               </>
             ) : (
-              <div className="text-center py-20">
-                <div className="text-6xl mb-4">🔍</div>
+              <div className="text-center py-20 animate-fade-in">
+                <div className="text-6xl mb-4 animate-float">🔍</div>
                 <h3 className="text-2xl font-bold text-gray-700 mb-2">
                   No products found
                 </h3>
-                <p className="text-gray-600">
+                <p className="text-gray-600 mb-6">
                   Try adjusting your search or filters
                 </p>
+                <button
+                  onClick={() => {
+                    setSelectedCategory('all');
+                    setSearchTerm('');
+                    setSearchParams({});
+                  }}
+                  className="btn-primary"
+                >
+                  View All Products
+                </button>
               </div>
             )}
           </div>

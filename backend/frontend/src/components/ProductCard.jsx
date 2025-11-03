@@ -13,6 +13,7 @@ const ProductCard = ({ product, showQuickRating = false, userCanRate = false, on
   const [isSubmittingRating, setIsSubmittingRating] = useState(false);
   const [isInWishlist, setIsInWishlist] = useState(false);
   const [isTogglingWishlist, setIsTogglingWishlist] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(true); // Changed to true for immediate display
 
   // Check if product is in wishlist on component mount
   useEffect(() => {
@@ -106,15 +107,16 @@ const ProductCard = ({ product, showQuickRating = false, userCanRate = false, on
   const productId = product._id || product.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
 
   return (
-    <Link to={`/product/${productId}`} className="card group">
-      <div className="relative overflow-hidden h-64">
+    <Link to={`/product/${productId}`} className="card group block">
+      <div className="relative overflow-hidden h-64 bg-gray-100">
         <img
           src={product.image}
           alt={product.name}
-          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+          className="w-full h-full object-cover transition-all duration-700 group-hover:scale-110"
+          style={{ transition: 'transform 0.7s cubic-bezier(0.4, 0, 0.2, 1)' }}
         />
         {product.originalPrice && (
-          <div className="absolute top-4 left-4 bg-desi-terracotta text-white px-3 py-1 rounded-full text-sm font-semibold">
+          <div className="absolute top-4 left-4 bg-desi-terracotta text-white px-3 py-1 rounded-full text-sm font-semibold shadow-lg animate-scale-in">
             {Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF
           </div>
         )}
@@ -124,7 +126,7 @@ const ProductCard = ({ product, showQuickRating = false, userCanRate = false, on
           <button
             onClick={handleToggleWishlist}
             disabled={isTogglingWishlist}
-            className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm p-2 rounded-full hover:bg-white transition-all duration-300 shadow-md disabled:opacity-50"
+            className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm p-2 rounded-full hover:bg-white hover:scale-110 transition-all duration-300 shadow-md disabled:opacity-50"
             title={isInWishlist ? 'Remove from wishlist' : 'Add to wishlist'}
           >
             {isTogglingWishlist ? (
@@ -226,10 +228,10 @@ const ProductCard = ({ product, showQuickRating = false, userCanRate = false, on
         <button
           onClick={handleAddToCart}
           disabled={product.stock === 0}
-          className={`w-full py-2 px-4 rounded-lg font-semibold flex items-center justify-center space-x-2 transition-all ${
+          className={`w-full py-2 px-4 rounded-lg font-semibold flex items-center justify-center space-x-2 transition-all duration-300 transform hover:scale-[1.02] active:scale-95 ${
             product.stock === 0
               ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-              : 'bg-desi-gold text-white hover:bg-yellow-600'
+              : 'bg-desi-gold text-white hover:bg-yellow-600 hover:shadow-lg'
           }`}
         >
           <ShoppingCart className="w-5 h-5" />
