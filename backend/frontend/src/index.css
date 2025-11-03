@@ -8,10 +8,16 @@
   box-sizing: border-box;
 }
 
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 80px;
+}
+
 body {
   font-family: 'Poppins', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
 }
 
 @layer components {
@@ -32,7 +38,9 @@ body {
   }
   
   .card {
-    @apply bg-white rounded-xl shadow-lg overflow-hidden transition-transform duration-300 hover:scale-105;
+    @apply bg-white rounded-xl shadow-lg overflow-hidden transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl;
+    transform: translateZ(0);
+    backface-visibility: hidden;
   }
   
   .input-field {
@@ -104,5 +112,153 @@ body {
     
     .animate-float-delay {
       animation: float-delay 8s ease-in-out infinite 2s;
+    }
+
+    /* Fade-in animations for smooth content loading */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes scaleIn {
+      from {
+        opacity: 0;
+        transform: scale(0.9);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    .animate-fade-in-up {
+      animation: fadeInUp 0.6s ease-out forwards;
+    }
+
+    .animate-fade-in {
+      animation: fadeIn 0.5s ease-out forwards;
+    }
+
+    .animate-scale-in {
+      animation: scaleIn 0.4s ease-out forwards;
+    }
+
+    /* Stagger animations for grid items */
+    .stagger-1 { animation-delay: 0.1s; }
+    .stagger-2 { animation-delay: 0.2s; }
+    .stagger-3 { animation-delay: 0.3s; }
+    .stagger-4 { animation-delay: 0.4s; }
+    .stagger-5 { animation-delay: 0.5s; }
+    .stagger-6 { animation-delay: 0.6s; }
+
+    /* Smooth image loading */
+    img {
+      transition: opacity 0.3s ease-in-out;
+    }
+
+    img[loading="lazy"] {
+      opacity: 0;
+    }
+
+    img[loading="lazy"].loaded {
+      opacity: 1;
+    }
+
+    /* Skeleton loading shimmer effect */
+    @keyframes shimmer {
+      0% {
+        background-position: -468px 0;
+      }
+      100% {
+        background-position: 468px 0;
+      }
+    }
+
+    .skeleton {
+      animation: shimmer 1.2s ease-in-out infinite;
+      background: linear-gradient(
+        to right,
+        #f0f0f0 0%,
+        #e0e0e0 20%,
+        #f0f0f0 40%,
+        #f0f0f0 100%
+      );
+      background-size: 800px 104px;
+    }
+
+    /* Smooth scroll reveal */
+    .scroll-reveal {
+      opacity: 0;
+      transform: translateY(50px);
+      transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+    }
+
+    .scroll-reveal.revealed {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Parallax container */
+    .parallax {
+      transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+
+    /* Smooth button hover effects */
+    button, .btn-primary, .btn-secondary {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      transform: translateZ(0);
+      backface-visibility: hidden;
+    }
+
+    button:active, .btn-primary:active, .btn-secondary:active {
+      transform: scale(0.98);
+    }
+
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 10px;
+      height: 10px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #f1f1f1;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #D4AF37;
+      border-radius: 5px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #B8941F;
+    }
+
+    /* Smooth transitions for all interactive elements */
+    a, input, textarea, select {
+      transition: all 0.3s ease;
+    }
+
+    /* Focus visible for better accessibility */
+    *:focus-visible {
+      outline: 2px solid #D4AF37;
+      outline-offset: 2px;
+    }
+
+    /* Backdrop blur effect */
+    .backdrop-blur-glass {
+      backdrop-filter: blur(10px) saturate(180%);
+      -webkit-backdrop-filter: blur(10px) saturate(180%);
+      background-color: rgba(255, 255, 255, 0.75);
     }
 }

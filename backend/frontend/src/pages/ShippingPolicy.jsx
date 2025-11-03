@@ -226,6 +226,7 @@ const ShippingPolicy = () => {
             <li>• We do not deliver on Sundays and public holidays</li>
             <li>• Remote locations may require additional 1-2 days for delivery</li>
             <li>• You will receive tracking information via SMS and email once your order is dispatched</li>
+            <li>• <strong>Return within 7 days</strong> of delivery if you're not satisfied with your purchase</li>
           </ul>
         </div>
 
@@ -235,21 +236,20 @@ const ShippingPolicy = () => {
           <p className="text-lg opacity-90 mb-6">
             Our customer service team is here to help with all your shipping questions.
           </p>
-          <div className="grid md:grid-cols-2 gap-6 max-w-md mx-auto">
-            <div className="flex items-center justify-center space-x-3 bg-white/10 rounded-lg p-4">
-              <Phone className="w-5 h-5" />
-              <div className="text-left">
-                <div className="font-semibold">Call Us</div>
-                <div className="text-sm opacity-90">+91 98765 43210</div>
-              </div>
+          <div className="grid md:grid-cols-2 gap-6 max-w-2xl mx-auto">
+            <div className="bg-white/10 rounded-lg p-6">
+              <Phone className="w-6 h-6 mx-auto mb-3" />
+              <div className="font-semibold text-lg mb-1">Call Us</div>
+              <div className="text-base opacity-90">6203009518</div>
             </div>
-            <div className="flex items-center justify-center space-x-3 bg-white/10 rounded-lg p-4">
-              <Mail className="w-5 h-5" />
-              <div className="text-left">
-                <div className="font-semibold">Email Us</div>
-                <div className="text-sm opacity-90">villagecrunchcontact@gmail.com</div>
-              </div>
+            <div className="bg-white/10 rounded-lg p-6">
+              <Mail className="w-6 h-6 mx-auto mb-3" />
+              <div className="font-semibold text-lg mb-1">Email Us</div>
+              <div className="text-sm opacity-90 break-words">villagecrunchcontact@gmail.com</div>
             </div>
+          </div>
+          <div className="mt-6 text-sm opacity-75">
+            <p>Customer Service Hours: Monday - Saturday, 9 AM - 7 PM</p>
           </div>
         </div>
       </div>

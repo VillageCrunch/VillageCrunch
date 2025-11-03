@@ -6,6 +6,7 @@ import { CartProvider } from './context/CartContext';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import ScrollToTop from './components/ScrollToTop';
+import ScrollProgressBar from './components/ScrollProgressBar';
 import AnalyticsSetup from './utils/analytics.jsx';
 import Home from './pages/Home';
 import Products from './pages/Products';
@@ -33,6 +34,7 @@ function App() {
       <Router>
         <AnalyticsSetup />
         <ScrollToTop />
+        <ScrollProgressBar />
         <AuthProvider>
           <CartProvider>
             <div className="flex flex-col min-h-screen">

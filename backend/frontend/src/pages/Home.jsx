@@ -4,12 +4,28 @@ import { ArrowRight, Star, Heart, Award, Truck, ChevronLeft, ChevronRight } from
 import ProductCard from '../components/ProductCard';
 import SEOHead from '../components/SEOHead';
 import { getProducts } from '../utils/api.js';
+import { useScrollReveal } from '../hooks/useScrollReveal';
 
 const Home = () => {
   const [featuredProducts, setFeaturedProducts] = useState([]);
   const [currentSlide, setCurrentSlide] = useState(0);
   const touchStartX = useRef(0);
   const touchEndX = useRef(0);
+  const [scrollY, setScrollY] = useState(0);
+
+  // Scroll reveal hooks for different sections
+  const heroRef = useScrollReveal({ threshold: 0.2 });
+  const featuresRef = useScrollReveal({ threshold: 0.2 });
+  const productsRef = useScrollReveal({ threshold: 0.1 });
+
+  // Parallax scroll effect
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrollY(window.scrollY);
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   // Simple inline Carousel component
   const Carousel = () => {
@@ -138,58 +154,67 @@ const Home = () => {
       />
       
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-r from-desi-cream to-amber-50 pattern-bg">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+      <section className="relative bg-gradient-to-r from-desi-cream to-amber-50 pattern-bg overflow-hidden">
+        {/* Parallax background elements */}
+        <div 
+          className="absolute inset-0 opacity-5 pointer-events-none"
+          style={{ transform: `translateY(${scrollY * 0.3}px)` }}
+        >
+          <div className="absolute top-20 left-10 w-64 h-64 bg-desi-gold rounded-full blur-3xl"></div>
+          <div className="absolute bottom-20 right-10 w-96 h-96 bg-desi-brown rounded-full blur-3xl"></div>
+        </div>
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 relative z-10">
           <div className="grid md:grid-cols-2 gap-12 items-center">
-            <div>
+            <div className="animate-fade-in-up">
               <h1 className="text-5xl md:text-6xl font-bold text-desi-brown mb-6">
                 Premium Indian
-                <span className="block text-desi-gold">Dry Fruits & Makhana</span>
+                <span className="block text-desi-gold animate-fade-in-up" style={{ animationDelay: '0.2s' }}>Dry Fruits & Makhana</span>
               </h1>
-              <p className="text-lg text-gray-700 mb-8">
+              <p className="text-lg text-gray-700 mb-8 animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
                 Experience the richness of authentic Bihari tradition with our handpicked 
                 selection of premium dry fruits, roasted makhana, and traditional thekua.
               </p>
-              <div className="flex flex-wrap gap-4">
+              <div className="flex flex-wrap gap-4 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
                 <Link
                   to="/products"
-                  className="btn-primary flex items-center space-x-2"
+                  className="btn-primary flex items-center space-x-2 hover:shadow-2xl"
                 >
                   <span>Shop Now</span>
-                  <ArrowRight className="w-5 h-5" />
+                  <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
                 </Link>
                 <Link
                   to="/about"
-                  className="btn-secondary"
+                  className="btn-secondary hover:shadow-lg"
                 >
                   Learn More
                 </Link>
               </div>
 
-              <div className="grid grid-cols-3 gap-6 mt-12">
-                <div className="text-center">
+              <div className="grid grid-cols-3 gap-6 mt-12 animate-fade-in-up" style={{ animationDelay: '0.5s' }}>
+                <div className="text-center transform hover:scale-110 transition-transform duration-300">
                   <div className="text-3xl font-bold text-desi-brown">100%</div>
                   <div className="text-sm text-gray-600">Natural</div>
                 </div>
-                <div className="text-center">
+                <div className="text-center transform hover:scale-110 transition-transform duration-300">
                   <div className="text-3xl font-bold text-desi-brown">10k+</div>
                   <div className="text-sm text-gray-600">Happy Customers</div>
                 </div>
-                <div className="text-center">
+                <div className="text-center transform hover:scale-110 transition-transform duration-300">
                   <div className="text-3xl font-bold text-desi-brown">24/7</div>
                   <div className="text-sm text-gray-600">Support</div>
                 </div>
               </div>
             </div>
 
-            <div className="flex flex-col items-center">
+            <div className="flex flex-col items-center animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
               {/* Carousel container */}
               <div className="w-full max-w-md">
                 <Carousel />
               </div>
 
               {/* Compact badge always below carousel */}
-              <div className="mt-4 bg-white p-3 rounded-xl shadow-xl w-max">
+              <div className="mt-4 bg-white p-3 rounded-xl shadow-xl w-max hover:shadow-2xl transition-shadow duration-300">
                 <div className="flex items-center space-x-2 text-sm">
                   <div className="bg-desi-gold p-2 rounded-full flex items-center justify-center">
                     <Award className="w-4 h-4 text-white" />
@@ -206,45 +231,39 @@ const Home = () => {
       </section>
 
       {/* Features */}
-      <section className="py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section ref={featuresRef.ref} className="py-16 bg-white relative overflow-hidden">
+        {/* Decorative gradient background */}
+        <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-desi-gold/5 to-transparent rounded-full blur-3xl -z-0"></div>
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-gradient-to-tr from-desi-brown/5 to-transparent rounded-full blur-3xl -z-0"></div>
+        
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="grid md:grid-cols-4 gap-8">
-            <div className="text-center">
-              <div className="bg-desi-cream p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-                <Heart className="w-8 h-8 text-desi-brown" />
+            {[
+              { icon: Heart, title: '100% Natural', desc: 'No preservatives or artificial additives', delay: '0s' },
+              { icon: Award, title: 'Premium Quality', desc: 'Handpicked and quality tested', delay: '0.1s' },
+              { icon: Truck, title: 'Fast Delivery', desc: 'Quick delivery across India', delay: '0.2s' },
+              { icon: Star, title: 'Trusted Brand', desc: 'Thousands of satisfied customers', delay: '0.3s' }
+            ].map((feature, index) => (
+              <div 
+                key={index}
+                className={`text-center group cursor-pointer ${featuresRef.isVisible ? 'animate-fade-in-up' : 'opacity-0'}`}
+                style={{ animationDelay: feature.delay }}
+              >
+                <div className="bg-desi-cream p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center group-hover:bg-desi-gold group-hover:scale-110 transition-all duration-300 shadow-md group-hover:shadow-xl">
+                  <feature.icon className="w-8 h-8 text-desi-brown group-hover:text-white transition-colors duration-300" />
+                </div>
+                <h3 className="font-semibold text-lg mb-2 group-hover:text-desi-gold transition-colors duration-300">{feature.title}</h3>
+                <p className="text-sm text-gray-600">{feature.desc}</p>
               </div>
-              <h3 className="font-semibold text-lg mb-2">100% Natural</h3>
-              <p className="text-sm text-gray-600">No preservatives or artificial additives</p>
-            </div>
-            <div className="text-center">
-              <div className="bg-desi-cream p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-                <Award className="w-8 h-8 text-desi-brown" />
-              </div>
-              <h3 className="font-semibold text-lg mb-2">Premium Quality</h3>
-              <p className="text-sm text-gray-600">Handpicked and quality tested</p>
-            </div>
-            <div className="text-center">
-              <div className="bg-desi-cream p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-                <Truck className="w-8 h-8 text-desi-brown" />
-              </div>
-              <h3 className="font-semibold text-lg mb-2">Fast Delivery</h3>
-              <p className="text-sm text-gray-600">Quick delivery across India</p>
-            </div>
-            <div className="text-center">
-              <div className="bg-desi-cream p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-                <Star className="w-8 h-8 text-desi-brown" />
-              </div>
-              <h3 className="font-semibold text-lg mb-2">Trusted Brand</h3>
-              <p className="text-sm text-gray-600">Thousands of satisfied customers</p>
-            </div>
+            ))}
           </div>
         </div>
       </section>
 
       {/* Featured Products */}
-      <section className="py-16 pattern-bg">
+      <section ref={productsRef.ref} className="py-16 pattern-bg relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
+          <div className={`text-center mb-12 ${productsRef.isVisible ? 'animate-fade-in-up' : 'opacity-0'}`}>
             <h2 className="section-title">Featured Products</h2>
             <p className="text-gray-600 mt-2">
               Explore our handpicked selection of premium products
@@ -253,8 +272,14 @@ const Home = () => {
 
           {/* Desktop Grid Layout (hidden on mobile) */}
           <div className="hidden md:grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            {featuredProducts.map(product => (
-              <ProductCard key={product._id} product={product} />
+            {featuredProducts.map((product, index) => (
+              <div
+                key={product._id}
+                className={`${productsRef.isVisible ? 'animate-fade-in-up' : 'opacity-0'}`}
+                style={{ animationDelay: `${index * 0.1}s` }}
+              >
+                <ProductCard product={product} />
+              </div>
             ))}
           </div>
 
