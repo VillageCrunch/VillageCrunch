@@ -97,7 +97,7 @@ const ContactUs = () => {
                   </div>
                   <div>
                     <h3 className="font-semibold text-gray-900 mb-1">Call Us</h3>
-                    <p className="text-gray-600">6203009518</p>
+                    <p className="text-gray-600">+91 98765 43210</p>
                     <p className="text-sm text-gray-500">Mon-Sat, 9 AM - 8 PM</p>
                   </div>
                 </div>
@@ -142,10 +142,10 @@ const ContactUs = () => {
                   <summary className="font-medium cursor-pointer">How long does shipping take?</summary>
                   <p className="mt-2 text-gray-600">Standard delivery: 3-5 business days. Express delivery: 1-2 business days.</p>
                 </details>
-              <details className="bg-white p-4 rounded-lg border">
-                <summary className="font-medium cursor-pointer">What's your return policy?</summary>
-                <p className="mt-2 text-gray-600">7-day hassle-free returns for unopened products with full refund.</p>
-              </details>
+                <details className="bg-white p-4 rounded-lg border">
+                  <summary className="font-medium cursor-pointer">What's your return policy?</summary>
+                  <p className="mt-2 text-gray-600">30-day hassle-free returns for unopened products with full refund.</p>
+                </details>
                 <details className="bg-white p-4 rounded-lg border">
                   <summary className="font-medium cursor-pointer">Do you offer bulk discounts?</summary>
                   <p className="mt-2 text-gray-600">Yes! Special pricing for bulk orders above ₹5000. Contact us for quotes.</p>
