@@ -71,6 +71,17 @@ const AIChatbot = () => {
   // Connect to customer care agent
   const connectToAgent = async () => {
     try {
+      // Check if user is logged in
+      if (!user) {
+        toast.error('Please login to connect with customer care');
+        setMessages(prev => [...prev, {
+          type: 'system',
+          text: '⚠️ **Login Required**\n\nTo connect with our customer care team, please login to your account first.\n\nYou can:\n• Click the login button at the top\n• Register if you don\'t have an account\n• Continue chatting with me (Villy) for general queries',
+          timestamp: new Date()
+        }]);
+        return;
+      }
+
       setIsConnectedToAgent(true);
       setShowAgentOptions(false);
       
