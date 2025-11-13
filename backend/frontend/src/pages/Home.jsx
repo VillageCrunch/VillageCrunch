@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, Star, Heart, Award, Truck, ChevronLeft, ChevronRight } from 'lucide-react';
 import ProductCard from '../components/ProductCard';
 import SEOHead from '../components/SEOHead';
+import AIProductRecommendations from '../components/AIProductRecommendations';
 import { getProducts } from '../utils/api.js';
 import { useScrollReveal } from '../hooks/useScrollReveal';
 
@@ -434,6 +435,9 @@ const Home = () => {
           </div>
         </div>
       </section>
+
+      {/* AI-Powered Recommendations */}
+      <AIProductRecommendations limit={4} />
     </div>
   );
 };

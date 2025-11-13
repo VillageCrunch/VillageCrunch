@@ -46,6 +46,9 @@ app.use(
   })
 );
 
+// --- Serve Static Files (for image uploads) ---
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 // --- API Routes ---
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/products', require('./routes/products'));
@@ -59,6 +62,7 @@ app.use('/api/cart', require('./routes/cart'));
 app.use('/api/addresses', require('./routes/addresses'));
 app.use('/api/wishlist', require('./routes/wishlist'));
 app.use('/api/seo', require('./routes/seo'));
+app.use('/api/support', require('./routes/support'));
 
 // --- Health Check ---
 app.get('/api/health', (req, res) => {
