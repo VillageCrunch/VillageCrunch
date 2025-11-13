@@ -8,6 +8,7 @@ import toast from 'react-hot-toast';
 import ReviewForm from '../components/ReviewForm';
 import ReviewList from '../components/ReviewList';
 import SEOHead from '../components/SEOHead';
+import AIProductRecommendations from '../components/AIProductRecommendations';
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -733,6 +734,9 @@ const ProductDetail = () => {
             </div>
           </div>
         )}
+
+        {/* AI-Powered Recommendations */}
+        {product && <AIProductRecommendations currentProduct={product} limit={4} />}
       </div>
     </div>
   );

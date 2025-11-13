@@ -7,6 +7,7 @@ import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import ScrollToTop from './components/ScrollToTop';
 import ScrollProgressBar from './components/ScrollProgressBar';
+import AIChatbot from './components/AIChatbot';
 import AnalyticsSetup from './utils/analytics.jsx';
 import Home from './pages/Home';
 import Products from './pages/Products';
@@ -25,6 +26,7 @@ import ShippingPolicy from './pages/ShippingPolicy';
 import ReturnsPolicy from './pages/ReturnsPolicy';
 import Admin from './pages/Admin';
 import Wishlist from './pages/Wishlist';
+import CustomerSupport from './pages/CustomerSupport';
 import ProtectedRoute from './components/ProtectedRoute';
 import OrdersDetail from './pages/OrderDeatail';
 
@@ -43,6 +45,9 @@ function App() {
               <Routes>
                 <Route path="/admin" element={<ProtectedRoute adminOnly={true}>
                   <Admin />
+                </ProtectedRoute>} />
+                <Route path="/support" element={<ProtectedRoute>
+                  <CustomerSupport />
                 </ProtectedRoute>} />
                 <Route path="/" element={<Home />} />
                 <Route path="/products" element={<Products />} />
@@ -64,6 +69,7 @@ function App() {
               </Routes>
               </main>
               <Footer />
+              <AIChatbot />
               <Toaster
                 position="top-right"
                 toastOptions={{
