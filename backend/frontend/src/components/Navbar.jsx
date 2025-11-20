@@ -22,13 +22,20 @@ const Navbar = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2">
-            <div className="text-3xl">🌾</div>
-            <div>
+          <Link to="/" className="flex items-center space-x-3">
+            <img 
+              src="/images/villagecrunch-logo.png" 
+              alt="VillageCrunch Logo" 
+              className="h-12 w-auto"
+              onError={(e) => {
+                e.target.style.display = 'none';
+                e.target.nextSibling.style.display = 'block';
+              }}
+            />
+            <div style={{display: 'none'}}>
               <h1 className="text-2xl font-bold text-desi-brown">
                 VillageCrunch
               </h1>
-              {/* <p className="text-xs text-desi-gold">Premium Indian Dry Fruits</p> */}
             </div>
           </Link>
 
