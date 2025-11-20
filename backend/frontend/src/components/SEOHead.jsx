@@ -17,7 +17,7 @@ const SEOHead = ({
   const siteName = 'VillageCrunch';
   const defaultTitle = 'Premium Dry Fruits & Makhana - VillageCrunch | Authentic Indian Delights';
   const defaultDescription = 'Buy premium quality dry fruits, makhana, and traditional Bihari thekua online. 100% natural and authentic Indian products with fast delivery across India.';
-  const defaultImage = `${baseUrl}/images/logo-og.jpg`;
+  const defaultImage = `${baseUrl}/images/villagecrunch-logo.png`;
   const defaultKeywords = 'dry fruits, makhana, thekua, Bihar snacks, premium dry fruits, almonds, cashews, dates, pistachios, walnuts, fox nuts, traditional sweets, online shopping, Indian snacks, natural products';
 
   const pageTitle = title ? `${title} - ${siteName}` : defaultTitle;
@@ -37,7 +37,7 @@ const SEOHead = ({
       "name": siteName,
       "alternateName": "Village Crunch",
       "url": baseUrl,
-      "logo": `${baseUrl}/images/logo.png`,
+      "logo": `${baseUrl}/images/villagecrunch-logo.png`,
       "description": "Premium Indian dry fruits, makhana, and traditional snacks online store",
       "address": {
         "@type": "PostalAddress",
