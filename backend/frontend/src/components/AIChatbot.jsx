@@ -19,18 +19,27 @@ const AIChatbot = () => {
   const [currentTicketId, setCurrentTicketId] = useState(null);
   const [isSendingMessage, setIsSendingMessage] = useState(false);
   const messagesEndRef = useRef(null);
+  const [quickActions, setQuickActions] = useState([]);
 
-  // Initialize greeting message with user's name
+  // Initialize greeting message with user's name and quick actions
   useEffect(() => {
     const greeting = user?.name 
-      ? `👋 Hi ${user.name}! I'm Villy, your VillageCrunch AI assistant. I can help you find the perfect dry fruits, makhana, or thekua!\n\nI can help with:\n• Product information\n• Pricing & offers\n• Delivery details\n• Order tracking\n\nIf you need help with an issue or want to speak with our team, just let me know!`
-      : '👋 Hi! I\'m Villy, your VillageCrunch AI assistant. I can help you find the perfect dry fruits, makhana, or thekua!\n\nI can help with:\n• Product information\n• Pricing & offers\n• Delivery details\n• Order tracking\n\nIf you need help with an issue or want to speak with our team, just let me know!';
+      ? `👋 Hi ${user.name}! I'm Villy, your VillageCrunch shopping assistant!\n\n🎯 **Quick Start:** Pick what you're interested in below, or ask me anything!`
+      : '👋 Hi! I\'m Villy, your VillageCrunch shopping assistant!\n\n🎯 **Quick Start:** Pick what you\'re interested in below, or ask me anything!';
     
     setMessages([{
       type: 'bot',
       text: greeting,
       timestamp: new Date()
     }]);
+    
+    // Set initial quick actions
+    setQuickActions([
+      { label: '🌰 Makhana', value: 'show me makhana' },
+      { label: '🥜 Dry Fruits', value: 'show dry fruits' },
+      { label: '🍪 Thekua', value: 'show thekua' },
+      { label: '💰 Best Deals', value: 'best offers' }
+    ]);
   }, [user]);
 
   // Load products for AI recommendations
@@ -119,7 +128,7 @@ const AIChatbot = () => {
     }
   };
 
-  // AI Response Logic
+  // AI Response Logic - Enhanced for interactivity
   const getAIResponse = (userMessage) => {
     const msg = userMessage.toLowerCase();
 
@@ -128,145 +137,317 @@ const AIChatbot = () => {
       return null;
     }
 
-    // Issue/Problem/Complaint detection
+    // Issue/Problem/Complaint detection - Priority 1
     if (msg.includes('issue') || msg.includes('problem') || msg.includes('complaint') || 
         msg.includes('defect') || msg.includes('broken') || msg.includes('damaged') ||
         msg.includes('wrong') || msg.includes('missing') || msg.includes('not received') ||
-        msg.includes('bad quality') || msg.includes('expired') || msg.includes('stale')) {
+        msg.includes('bad quality') || msg.includes('expired') || msg.includes('stale') ||
+        msg.includes('rotten') || msg.includes('smell') || msg.includes('refund') ||
+        msg.includes('cancel') || msg.includes('unhappy') || msg.includes('disappointed')) {
       setShowAgentOptions(true);
-      return '😟 I\'m sorry to hear you\'re having an issue! \n\n' +
-        'For product issues, refunds, or replacements, our Customer Care team can help you better.\n\n' +
-        '✅ **What our team can do:**\n' +
-        '• Review your issue with photos\n' +
-        '• Process refunds instantly\n' +
-        '• Arrange replacements\n' +
-        '• Call you directly if needed\n\n' +
-        '👉 Would you like to connect with Customer Care now?';
+      setQuickActions([
+        { label: '📞 Connect Now', value: 'agent', primary: true },
+        { label: '📋 Return Policy', value: 'return policy' }
+      ]);
+      return '😟 **I\'m really sorry!** Let me connect you with our team immediately.\n\n' +
+        '**They can help with:**\n' +
+        '✅ Instant refund\n' +
+        '✅ Free replacement\n' +
+        '✅ Direct callback\n\n' +
+        'Click "Connect Now" below! ⚡';
     }
 
     // Agent/Human request
-    if (msg.includes('agent') || msg.includes('human') || msg.includes('person') || 
-        msg.includes('representative') || msg.includes('customer care') || msg.includes('support team')) {
+    if (msg.includes('agent') || msg.includes('human') || msg.includes('talk') || 
+        msg.includes('customer care') || msg.includes('support')) {
       setShowAgentOptions(true);
-      return '👤 I\'ll connect you with our customer care team!\n\n' +
-        '**Benefits of talking to our team:**\n' +
-        '• Real-time chat support\n' +
-        '• Upload product images\n' +
-        '• Get callback if needed\n' +
-        '• Faster issue resolution\n\n' +
-        'Click "Connect to Customer Care" below to start!';
+      setQuickActions([
+        { label: '👤 Connect to Agent', value: 'agent', primary: true }
+      ]);
+      return '👤 **Ready to connect you with our team!**\n\n' +
+        '⚡ Response time: Under 5 minutes\n' +
+        '📸 You can upload photos\n' +
+        '☎️ Get callback if needed';
     }
 
-    // Greeting responses
-    if (msg.match(/^(hi|hello|hey|namaste)/)) {
-      return 'Hello! 😊 I\'m Villy, your friendly shopping assistant! I\'m here to help you discover our premium dry fruits, makhana, and traditional thekua. What interests you?\n\n💡 Need to talk to a human? Just type "agent" anytime!';
+    // Greeting - Interactive
+    if (msg.match(/^(hi|hello|hey|namaste|good morning|good afternoon|good evening)/)) {
+      const userName = user?.name ? ` ${user.name}` : '';
+      setQuickActions([
+        { label: '🌰 Makhana', value: 'show makhana' },
+        { label: '🥜 Dry Fruits', value: 'dry fruits' },
+        { label: '🍪 Thekua', value: 'thekua' },
+        { label: '🎁 Gift Ideas', value: 'gifting' }
+      ]);
+      return `Hi${userName}! 😊 Ready to shop?\n\nPick from below or tell me what you need! 👇`;
     }
 
-    // Product category questions
+    // Makhana - Concise with actions
     if (msg.includes('makhana') || msg.includes('fox nut')) {
-      const makhanaProducts = products.filter(p => p.category === 'makhana');
+      const makhanaProducts = products.filter(p => 
+        p.category === 'makhana' || p.name?.toLowerCase().includes('makhana')
+      );
+      
+      setQuickActions([
+        { label: '🌶️ Peri Peri', value: 'peri peri makhana' },
+        { label: '🧂 Classic', value: 'classic makhana' },
+        { label: '🌿 Natural', value: 'natural makhana' },
+        { label: '💪 Health Benefits', value: 'makhana benefits' }
+      ]);
+      
       if (makhanaProducts.length > 0) {
-        return `🌟 We have ${makhanaProducts.length} delicious makhana options!\n\n` +
-          makhanaProducts.map(p => `• ${p.name} - ${p.weight} at ₹${p.price}`).join('\n') +
-          '\n\nAll our makhana is roasted to perfection. Which flavor interests you?';
+        let response = `🌟 **${makhanaProducts.length} Makhana Varieties Available**\n\n`;
+        makhanaProducts.slice(0, 3).forEach(p => {
+          response += `**${p.name}**\n💰 ₹${p.price} | 📦 ${p.weight}\n\n`;
+        });
+        response += '✅ Crunchy & Fresh\n✅ High Protein\n✅ Low Calorie';
+        return response;
       }
-      return '🌟 Our makhana (fox nuts) are roasted fresh and super crunchy! Check out our Peri Peri, Classic Roasted, and Natural varieties.';
+      return '🌟 **Makhana Collection**\n\n' +
+        '🌶️ Peri Peri (Spicy)\n' +
+        '🧂 Classic Salted\n' +
+        '🌿 Natural Plain\n\n' +
+        '💰 ₹199-299 | 100gm\n' +
+        '🚚 Free delivery over ₹500';
     }
 
-    if (msg.includes('thekua') || msg.includes('sweet') || msg.includes('traditional')) {
+    // Thekua - Quick info
+    if (msg.includes('thekua') || msg.includes('sweet') || msg.includes('traditional') || msg.includes('bihar')) {
       const thekuaProducts = products.filter(p => p.category === 'thekua');
+      
+      setQuickActions([
+        { label: '🍪 See All', value: 'all thekua' },
+        { label: '🎁 For Gifting', value: 'thekua gift' },
+        { label: '📦 Bulk Order', value: 'bulk thekua' }
+      ]);
+      
       if (thekuaProducts.length > 0) {
-        return `🍪 We offer ${thekuaProducts.length} authentic Bihar thekua varieties!\n\n` +
-          thekuaProducts.map(p => `• ${p.name} - ${p.weight} at ₹${p.price}`).join('\n') +
-          '\n\nPerfect for festivals or daily snacking! All homemade style.';
+        let response = `🍪 **Authentic Bihar Thekua**\n\n`;
+        thekuaProducts.slice(0, 2).forEach(p => {
+          response += `**${p.name}** - ₹${p.price}\n`;
+        });
+        response += '\n✅ Traditional recipe\n✅ Made with jaggery\n✅ Perfect for festivals';
+        return response;
       }
-      return '🍪 Our traditional Bihari thekua is made with authentic recipes - perfect for festivals or gifting!';
+      return '🍪 **Traditional Thekua**\n\n' +
+        '✨ Authentic Bihar recipe\n' +
+        '🍯 Pure jaggery sweetness\n' +
+        '🎊 Perfect for Chhath Puja\n\n' +
+        '💰 From ₹199 | 250gm';
     }
 
-    if (msg.includes('dry fruit') || msg.includes('almond') || msg.includes('cashew') || msg.includes('walnut')) {
+    // Dry fruits - Focused
+    if (msg.includes('dry fruit') || msg.includes('almond') || msg.includes('cashew') || 
+        msg.includes('walnut') || msg.includes('pistachio') || msg.includes('badam') || msg.includes('kaju')) {
+      
+      setQuickActions([
+        { label: '🥜 Almonds', value: 'almonds' },
+        { label: '🌰 Cashews', value: 'cashews' },
+        { label: '🥜 Walnuts', value: 'walnuts' },
+        { label: '🎁 Gift Box', value: 'dry fruits gift' }
+      ]);
+      
       const dryFruits = products.filter(p => p.category === 'dry-fruits');
+      
       if (dryFruits.length > 0) {
-        return `🥜 Premium dry fruits collection (${dryFruits.length} varieties):\n\n` +
-          dryFruits.map(p => `• ${p.name} - ${p.weight} at ₹${p.price}`).join('\n') +
-          '\n\n100% natural, premium quality! Great for health and gifting.';
+        let response = `🥜 **Premium Dry Fruits**\n\n`;
+        dryFruits.slice(0, 3).forEach(p => {
+          response += `**${p.name}** - ₹${p.price}\n`;
+        });
+        response += '\n✅ 100% Natural\n✅ Premium Quality\n✅ Health Benefits';
+        return response;
       }
-      return '🥜 We have premium almonds, cashews, walnuts, and more! All 100% natural and carefully selected.';
+      
+      return '🥜 **Premium Dry Fruits**\n\n' +
+        '🌰 Almonds - Brain food\n' +
+        '🥜 Cashews - Heart healthy\n' +
+        '🌰 Walnuts - Omega-3 rich\n' +
+        '🥜 Pistachios - Energy boost\n\n' +
+        '💰 From ₹249 | Best quality';
     }
 
-    // Price questions
-    if (msg.includes('price') || msg.includes('cost') || msg.includes('rate')) {
-      return '💰 Our prices are competitive! Makhana starts from ₹199, Thekua from ₹199, and Premium Dry Fruits from ₹249. Free delivery on orders above ₹500!';
+    // Price and offers - Direct
+    if (msg.includes('price') || msg.includes('cost') || msg.includes('offer') || msg.includes('discount') || msg.includes('deal')) {
+      setQuickActions([
+        { label: '🌰 Makhana ₹199', value: 'makhana price' },
+        { label: '🍪 Thekua ₹199', value: 'thekua price' },
+        { label: '🥜 Dry Fruits ₹249', value: 'dry fruits price' }
+      ]);
+      return '💰 **Best Prices!**\n\n' +
+        '🌰 Makhana: ₹199-299\n' +
+        '🍪 Thekua: ₹199-249\n' +
+        '🥜 Dry Fruits: ₹249+\n\n' +
+        '🎉 **Offers:**\n' +
+        '✅ Free shipping over ₹500\n' +
+        '✅ 10% off first order (FIRST10)\n' +
+        '✅ Bulk discounts available';
     }
 
-    // Delivery questions
-    if (msg.includes('deliver') || msg.includes('shipping') || msg.includes('ship')) {
-      return '🚚 We deliver across India! Orders typically reach within 3-5 business days. Free shipping on orders above ₹500. We use trusted courier partners.';
+    // Delivery - Quick answer
+    if (msg.includes('deliver') || msg.includes('shipping') || msg.includes('ship') || msg.includes('how long')) {
+      setQuickActions([
+        { label: '📦 Track Order', value: 'track order' },
+        { label: '🚚 Shipping Charges', value: 'shipping charges' }
+      ]);
+      return '🚚 **Fast Delivery!**\n\n' +
+        '📍 Metro Cities: 2-3 days\n' +
+        '📍 Other Cities: 3-5 days\n\n' +
+        '✅ FREE over ₹500\n' +
+        '✅ Real-time tracking\n' +
+        '✅ Same-day dispatch';
     }
 
-    // Quality questions
+    // Quality - Brief
     if (msg.includes('quality') || msg.includes('fresh') || msg.includes('natural')) {
-      return '✨ All our products are 100% natural with no preservatives! We source directly and ensure premium quality. Every item is checked before dispatch.';
+      setQuickActions([
+        { label: '📦 How We Pack', value: 'packaging' },
+        { label: '🌿 100% Natural?', value: 'ingredients' }
+      ]);
+      return '✨ **Quality Guaranteed**\n\n' +
+        '✅ 100% Natural\n' +
+        '✅ No Preservatives\n' +
+        '✅ Fresh & Hygienic\n' +
+        '✅ Quality Checked\n\n' +
+        '🛡️ Not satisfied? Full refund!';
     }
 
-    // Order/Payment questions
-    if (msg.includes('order') || msg.includes('payment') || msg.includes('cod')) {
-      return '💳 We accept Credit/Debit Cards, UPI, Net Banking, and Cash on Delivery. Your order will be confirmed immediately after payment!';
+    // Order process - Simplified
+    if (msg.includes('order') || msg.includes('buy') || msg.includes('how to') || 
+        msg.includes('payment') || msg.includes('cod') || msg.includes('upi')) {
+      setQuickActions([
+        { label: '🛍️ Start Shopping', value: 'show products' },
+        { label: '💳 Payment Options', value: 'payment methods' }
+      ]);
+      return '🛒 **Easy Ordering!**\n\n' +
+        '1️⃣ Browse & Add to cart\n' +
+        '2️⃣ Enter delivery address\n' +
+        '3️⃣ Choose payment method\n' +
+        '4️⃣ Confirm order\n\n' +
+        '💳 **Payments:**\n' +
+        'UPI | Cards | COD | Net Banking';
     }
 
-    // Return/Refund questions
-    if (msg.includes('return') || msg.includes('refund') || msg.includes('replace')) {
-      return '🔄 **Returns & Refunds Policy:**\n\n' +
-        '✅ 7-day return for unopened products\n' +
-        '✅ Instant replacement for damaged items\n' +
-        '✅ Full refund if not satisfied\n' +
-        '✅ Free return pickup\n\n' +
-        '**How to Return:**\n' +
-        '1. Contact us within 7 days\n' +
-        '2. We arrange free pickup\n' +
-        '3. Refund in 3-5 business days\n\n' +
-        'Have a specific issue? Type "agent" to talk to our customer care team for immediate assistance!';
+    // Returns - Clear
+    if (msg.includes('return') || msg.includes('refund') || msg.includes('replace') || msg.includes('exchange')) {
+      setQuickActions([
+        { label: '🔄 Start Return', value: 'agent' },
+        { label: '📋 Policy Details', value: 'return policy details' }
+      ]);
+      return '🔄 **Easy Returns**\n\n' +
+        '✅ 7-day return\n' +
+        '✅ Free pickup\n' +
+        '✅ Instant refund\n' +
+        '✅ No questions asked\n\n' +
+        '**Process:**\n' +
+        'Contact us → We pickup → Refund in 3-5 days';
     }
 
-    // Recommendation request
-    if (msg.includes('recommend') || msg.includes('suggest') || msg.includes('best') || msg.includes('popular')) {
-      const popular = products.filter(p => p.featured).slice(0, 3);
-      if (popular.length > 0) {
-        return `⭐ Our most popular items:\n\n` +
-          popular.map(p => `• ${p.name} - ${p.weight} at ₹${p.price}`).join('\n') +
-          '\n\nCustomers love these! Want to add any to your cart?';
-      }
-      return '⭐ I recommend trying our Peri Peri Makhana for spicy lovers, Traditional Thekua for authentic taste, or Mixed Dry Fruits for healthy snacking!';
+    // Health benefits - Focused
+    if (msg.includes('benefit') || msg.includes('health') || msg.includes('nutrition') || 
+        msg.includes('protein') || msg.includes('weight loss')) {
+      setQuickActions([
+        { label: '🌰 Makhana Benefits', value: 'makhana health' },
+        { label: '🥜 Almonds Benefits', value: 'almond health' },
+        { label: '🌰 Cashew Benefits', value: 'cashew health' }
+      ]);
+      return '💪 **Health Benefits**\n\n' +
+        '**Makhana:**\n' +
+        '✅ High protein\n' +
+        '✅ Low calorie\n' +
+        '✅ Weight loss friendly\n\n' +
+        '**Almonds:**\n' +
+        '✅ Brain booster\n' +
+        '✅ Heart healthy\n\n' +
+        '**Cashews:**\n' +
+        '✅ Energy rich\n' +
+        '✅ Immunity booster';
     }
 
-    // Help/Support
-    if (msg.includes('help') || msg.includes('support') || msg.includes('contact')) {
+    // Gifting - Interactive
+    if (msg.includes('gift') || msg.includes('festival') || msg.includes('occasion') || 
+        msg.includes('diwali') || msg.includes('wedding')) {
+      setQuickActions([
+        { label: '🎁 Gift Boxes', value: 'gift boxes' },
+        { label: '🪔 Festival Special', value: 'festival gifts' },
+        { label: '💼 Corporate Gifting', value: 'corporate gifts' }
+      ]);
+      return '🎁 **Perfect Gifting!**\n\n' +
+        '🪔 Festival hampers\n' +
+        '💍 Wedding favors\n' +
+        '🏢 Corporate gifts\n' +
+        '🎂 Birthday specials\n\n' +
+        '✅ Premium packaging\n' +
+        '✅ Personalized cards\n' +
+        '✅ Bulk discounts';
+    }
+
+    // Bulk orders - Direct
+    if (msg.includes('bulk') || msg.includes('wholesale') || msg.includes('large order')) {
+      setQuickActions([
+        { label: '📞 Talk to Team', value: 'agent' },
+        { label: '💰 Get Quote', value: 'bulk quote' }
+      ]);
+      return '📦 **Bulk Orders**\n\n' +
+        '💰 Special pricing for ₹5000+\n' +
+        '🚚 Free delivery\n' +
+        '📦 Custom packaging\n\n' +
+        '**Perfect for:**\n' +
+        '🏢 Corporate events\n' +
+        '💍 Weddings\n' +
+        '🎊 Festivals\n\n' +
+        'Connect with our team for quotes!';
+    }
+
+    // Thank you
+    if (msg.includes('thank') || msg.includes('thanks')) {
+      setQuickActions([
+        { label: '🛍️ Browse Products', value: 'show products' },
+        { label: '💰 Check Offers', value: 'offers' }
+      ]);
+      return '😊 You\'re welcome!\n\nAnything else I can help with?';
+    }
+
+    // Help - Quick options
+    if (msg.includes('help') || msg.includes('contact')) {
       setShowAgentOptions(true);
-      return '📞 **How can I help you?**\n\n' +
-        '🤖 Chat with me (Villy) for:\n' +
-        '• Product information\n' +
-        '• Pricing & availability\n' +
-        '• Delivery tracking\n' +
-        '• General questions\n\n' +
-        '👤 Talk to Customer Care for:\n' +
-        '• Order issues\n' +
-        '• Returns & refunds\n' +
-        '• Payment problems\n' +
-        '• Urgent matters\n\n' +
-        '**Contact Options:**\n' +
-        '📞 Call: +91-XXXXXXXXXX\n' +
-        '📧 Email: support@villagecrunch.com\n' +
-        '💬 Type "agent" to connect now!';
+      setQuickActions([
+        { label: '👤 Talk to Agent', value: 'agent', primary: true },
+        { label: '📞 Call Us', value: 'phone number' },
+        { label: '📧 Email', value: 'email address' }
+      ]);
+      return '📞 **We\'re Here to Help!**\n\n' +
+        '🤖 **Ask me about:**\n' +
+        'Products, Prices, Delivery\n\n' +
+        '👤 **Talk to team for:**\n' +
+        'Orders, Returns, Issues\n\n' +
+        '📞 +91-XXXXXXXXXX\n' +
+        '📧 support@villagecrunch.com';
     }
 
-    // Default response with suggestions
-    return 'I can help you with:\n\n' +
-      '🥜 Product information (Dry fruits, Makhana, Thekua)\n' +
-      '💰 Pricing and offers\n' +
-      '🚚 Delivery details\n' +
-      '💳 Payment options\n' +
-      '🔄 Returns & refunds\n\n' +
-      'What would you like to know?\n\n' +
-      '💡 Need human assistance? Type "agent" anytime!';
+    // Default - Smart suggestions
+    setQuickActions([
+      { label: '🌰 Makhana', value: 'makhana' },
+      { label: '🥜 Dry Fruits', value: 'dry fruits' },
+      { label: '🍪 Thekua', value: 'thekua' },
+      { label: '💰 Offers', value: 'offers' },
+      { label: '👤 Talk to Agent', value: 'agent' }
+    ]);
+    
+    return '🤔 **Not sure? Try these!**\n\n' +
+      '💬 "Show me makhana"\n' +
+      '💬 "Dry fruits prices"\n' +
+      '💬 "Delivery time"\n' +
+      '💬 "Best offers"\n\n' +
+      'Or pick from quick options below! 👇';
+  };
+
+  // Handle quick action button click
+  const handleQuickAction = (actionValue) => {
+    setInputMessage(actionValue);
+    // Trigger send after a short delay to allow input to update
+    setTimeout(() => {
+      handleSendMessage();
+    }, 100);
   };
 
   const handleSendMessage = async () => {
@@ -488,6 +669,25 @@ const AIChatbot = () => {
                 >
                   <X className="w-4 h-4" />
                 </button>
+              </div>
+            )}
+
+            {/* Quick Action Buttons */}
+            {quickActions.length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-3 overflow-x-auto">
+                {quickActions.map((action, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handleQuickAction(action.value)}
+                    className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all transform hover:scale-105 ${
+                      action.primary
+                        ? 'bg-gradient-to-r from-yellow-400 to-yellow-600 text-white shadow-lg hover:shadow-xl'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                  >
+                    {action.label}
+                  </button>
+                ))}
               </div>
             )}
 
