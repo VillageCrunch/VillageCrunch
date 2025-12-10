@@ -1,42 +1,201 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Mail, ArrowLeft, CheckCircle } from 'lucide-react';
-import { forgotPassword } from '../utils/api';
+import { Link, useNavigate } from 'react-router-dom';
+import { Mail, Phone, ArrowLeft, CheckCircle, Smartphone } from 'lucide-react';
+import { forgotPassword, verifyOTP } from '../utils/api';
 import toast from 'react-hot-toast';
 
 const ForgotPassword = () => {
-  const [email, setEmail] = useState('');
+  const [identifier, setIdentifier] = useState('');
+  const [otp, setOtp] = useState('');
   const [loading, setLoading] = useState(false);
-  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [step, setStep] = useState('input'); // 'input', 'otp-sent', 'email-sent'
+  const [method, setMethod] = useState(null); // 'email' or 'phone'
+  const [resetToken, setResetToken] = useState('');
+  const navigate = useNavigate();
+
+  const isEmail = identifier.includes('@');
+  const isPhone = /^[6-9]\d{9}$/.test(identifier);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!email) {
-      toast.error('Please enter your email address');
+    if (!identifier) {
+      toast.error('Please enter your email or phone number');
+      return;
+    }
+
+    if (!isEmail && !isPhone) {
+      toast.error('Please enter a valid email address or 10-digit phone number');
       return;
     }
 
     try {
       setLoading(true);
-      const data = await forgotPassword(email);
+      const data = await forgotPassword(identifier);
       
-      setIsSubmitted(true);
-      toast.success('Password reset email sent successfully!');
+      setMethod(data.method);
       
-      // Only show token in development mode if email service failed
-      if (data.resetToken) {
-        console.log('Reset Token (for development):', data.resetToken);
-        toast.success(`Development Mode - Reset Token: ${data.resetToken}`, { duration: 15000 });
+      if (data.method === 'email') {
+        setStep('email-sent');
+        toast.success('Password reset email sent successfully!');
+        
+        // Only show token in development mode if email service failed
+        if (data.resetToken) {
+          console.log('Reset Token (for development):', data.resetToken);
+          toast.success(`Development Mode - Reset Token: ${data.resetToken}`, { duration: 15000 });
+        }
+      } else if (data.method === 'phone') {
+        setStep('otp-sent');
+        toast.success('OTP sent to your phone number!');
+        
+        // Only show OTP in development mode via console (not in UI)
+        if (process.env.NODE_ENV === 'development' && data.otp) {
+          console.log('OTP (for development testing):', data.otp);
+        }
       }
+      
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to send reset email');
+      toast.error(error.response?.data?.message || 'Failed to send reset instructions');
     } finally {
       setLoading(false);
     }
   };
 
-  if (isSubmitted) {
+  const handleVerifyOTP = async (e) => {
+    e.preventDefault();
+    
+    if (!otp || otp.length !== 6) {
+      toast.error('Please enter a valid 6-digit OTP');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const data = await verifyOTP(identifier, otp);
+      
+      setResetToken(data.resetToken);
+      toast.success('OTP verified! Redirecting to reset password...');
+      
+      // Navigate to reset password page with token
+      setTimeout(() => {
+        navigate(`/reset-password/${data.resetToken}`);
+      }, 1000);
+      
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Invalid or expired OTP');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResendOTP = async () => {
+    try {
+      setLoading(true);
+      const data = await forgotPassword(identifier);
+      toast.success('OTP resent successfully!');
+      
+      // Only log in development, no toast notification
+      if (process.env.NODE_ENV === 'development' && data.otp) {
+        console.log('New OTP (for development testing):', data.otp);
+      }
+    } catch (error) {
+      toast.error('Failed to resend OTP');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // OTP Input Screen
+  if (step === 'otp-sent') {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-md w-full space-y-8">
+          <div className="text-center">
+            <div className="mx-auto h-16 w-16 bg-green-100 rounded-full flex items-center justify-center">
+              <Smartphone className="h-8 w-8 text-green-600" />
+            </div>
+            <h2 className="mt-6 text-3xl font-bold text-gray-900">
+              Enter OTP
+            </h2>
+            <p className="mt-2 text-sm text-gray-600">
+              We've sent a 6-digit OTP to{' '}
+              <span className="font-semibold text-desi-brown">{identifier}</span>
+            </p>
+            <p className="mt-2 text-xs text-gray-500">
+              The OTP will expire in 10 minutes for security.
+            </p>
+          </div>
+
+          <form className="mt-8 space-y-6" onSubmit={handleVerifyOTP}>
+            <div className="bg-white py-8 px-4 shadow-lg rounded-xl">
+              <div className="space-y-6">
+                <div>
+                  <label htmlFor="otp" className="block text-sm font-medium text-gray-700 mb-2">
+                    Enter 6-Digit OTP
+                  </label>
+                  <input
+                    id="otp"
+                    name="otp"
+                    type="text"
+                    maxLength="6"
+                    pattern="\d{6}"
+                    required
+                    value={otp}
+                    onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
+                    className="block w-full px-3 py-3 border border-gray-300 rounded-lg text-center text-2xl tracking-widest placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-desi-gold focus:border-transparent"
+                    placeholder="000000"
+                    autoComplete="off"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={loading || otp.length !== 6}
+                  className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-desi-brown hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-desi-gold disabled:opacity-50 disabled:cursor-not-allowed transition"
+                >
+                  {loading ? (
+                    <>
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                      Verifying...
+                    </>
+                  ) : (
+                    'Verify OTP'
+                  )}
+                </button>
+
+                <div className="text-center">
+                  <button
+                    type="button"
+                    onClick={handleResendOTP}
+                    disabled={loading}
+                    className="text-desi-gold hover:text-yellow-600 font-medium text-sm disabled:opacity-50"
+                  >
+                    Didn't receive OTP? Resend
+                  </button>
+                </div>
+              </div>
+            </div>
+          </form>
+
+          <div className="text-center space-y-2">
+            <button
+              onClick={() => {
+                setStep('input');
+                setOtp('');
+              }}
+              className="inline-flex items-center text-sm text-gray-600 hover:text-desi-gold transition"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Try different number
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Email Sent Success Screen
+  if (step === 'email-sent') {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-md w-full space-y-8">
@@ -49,7 +208,7 @@ const ForgotPassword = () => {
             </h2>
             <p className="mt-2 text-sm text-gray-600">
               We've sent password reset instructions to{' '}
-              <span className="font-semibold text-desi-brown">{email}</span>
+              <span className="font-semibold text-desi-brown">{identifier}</span>
             </p>
             <p className="mt-2 text-xs text-gray-500">
               The reset link will expire in 10 minutes for security.
@@ -64,8 +223,8 @@ const ForgotPassword = () => {
               
               <button
                 onClick={() => {
-                  setIsSubmitted(false);
-                  setEmail('');
+                  setStep('input');
+                  setIdentifier('');
                 }}
                 className="text-desi-gold hover:text-yellow-600 font-medium text-sm"
               >
@@ -88,6 +247,7 @@ const ForgotPassword = () => {
     );
   }
 
+  // Main Input Screen
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
@@ -99,7 +259,7 @@ const ForgotPassword = () => {
             Forgot Password?
           </h2>
           <p className="mt-2 text-sm text-gray-600">
-            Enter your email address and we'll send you instructions to reset your password.
+            Enter your email address or phone number and we'll send you instructions to reset your password.
           </p>
         </div>
 
@@ -107,23 +267,32 @@ const ForgotPassword = () => {
           <div className="bg-white py-8 px-4 shadow-lg rounded-xl">
             <div className="space-y-6">
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                  Email Address
+                <label htmlFor="identifier" className="block text-sm font-medium text-gray-700 mb-2">
+                  Email Address or Phone Number
                 </label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  {isEmail ? (
+                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  ) : (
+                    <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  )}
                   <input
-                    id="email"
-                    name="email"
-                    type="email"
-                    autoComplete="email"
+                    id="identifier"
+                    name="identifier"
+                    type="text"
+                    autoComplete="email tel"
                     required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    value={identifier}
+                    onChange={(e) => setIdentifier(e.target.value)}
                     className="pl-10 block w-full px-3 py-2 border border-gray-300 rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-desi-gold focus:border-transparent"
-                    placeholder="Enter your email address"
+                    placeholder="email@example.com or 9876543210"
                   />
                 </div>
+                <p className="text-xs text-gray-500 mt-2">
+                  {isEmail && '📧 We will send reset link to your email'}
+                  {isPhone && '📱 We will send OTP to your phone'}
+                  {!isEmail && !isPhone && 'Enter email or 10-digit phone number'}
+                </p>
               </div>
 
               <button
@@ -137,7 +306,9 @@ const ForgotPassword = () => {
                     Sending...
                   </>
                 ) : (
-                  'Send Reset Instructions'
+                  <>
+                    {isEmail ? 'Send Reset Link' : isPhone ? 'Send OTP' : 'Continue'}
+                  </>
                 )}
               </button>
             </div>

@@ -161,8 +161,13 @@ export const getRazorpayKey = async () => {
 };
 
 // Forgot Password
-export const forgotPassword = async (email) => {
-  const { data } = await axios.post(`${API_URL}/auth/forgot-password`, { email });
+export const forgotPassword = async (identifier) => {
+  const { data } = await axios.post(`${API_URL}/auth/forgot-password`, { identifier });
+  return data;
+};
+
+export const verifyOTP = async (phone, otp) => {
+  const { data } = await axios.post(`${API_URL}/auth/verify-otp`, { phone, otp });
   return data;
 };
 

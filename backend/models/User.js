@@ -69,6 +69,8 @@ const userSchema = new mongoose.Schema(
     },
     resetPasswordToken: String,
     resetPasswordExpire: Date,
+    resetPasswordOTP: String,
+    resetPasswordOTPExpire: Date,
     orders: [
       {
         type: mongoose.Schema.Types.ObjectId,

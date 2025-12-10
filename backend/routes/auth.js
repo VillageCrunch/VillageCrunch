@@ -192,62 +192,151 @@ router.delete('/:id', protect, admin, async (req, res) => {
   res.json({ message: 'User deleted successfully' });
 });
 
-// 🧩 FORGOT PASSWORD
+// 🧩 FORGOT PASSWORD - Email or Phone
 router.post('/forgot-password', async (req, res) => {
   try {
-    const { email } = req.body;
-    const user = await User.findOne({ email: email.toLowerCase() });
-
-    if (!user) {
-      return res.status(404).json({ message: 'User not found with this email' });
+    const { identifier } = req.body; // Can be email or phone
+    
+    if (!identifier) {
+      return res.status(400).json({ message: 'Please provide email or phone number' });
     }
 
-    // Generate reset token
-    const resetToken = crypto.randomBytes(20).toString('hex');
+    // Check if identifier is email or phone
+    const isEmail = identifier.includes('@');
+    
+    let user;
+    if (isEmail) {
+      user = await User.findOne({ email: identifier.toLowerCase() });
+    } else {
+      user = await User.findOne({ phone: identifier });
+    }
 
-    // Hash token and set to resetPasswordToken field
-    user.resetPasswordToken = crypto
-      .createHash('sha256')
-      .update(resetToken)
-      .digest('hex');
-
-    // Set expire time (10 minutes)
-    user.resetPasswordExpire = Date.now() + 10 * 60 * 1000;
-
-    await user.save();
-
-    try {
-      // Send password reset email
-      await sendPasswordResetEmail(user.email, resetToken, user.name);
-      
-      res.json({
-        message: 'Password reset email sent successfully. Please check your email for instructions.',
+    if (!user) {
+      return res.status(404).json({ 
+        message: `User not found with this ${isEmail ? 'email' : 'phone number'}` 
       });
+    }
 
-    } catch (emailError) {
-      // If email fails, clean up the reset token
-      user.resetPasswordToken = undefined;
-      user.resetPasswordExpire = undefined;
+    if (isEmail) {
+      // EMAIL-BASED RESET: Generate reset token and send email
+      const resetToken = crypto.randomBytes(20).toString('hex');
+
+      // Hash token and set to resetPasswordToken field
+      user.resetPasswordToken = crypto
+        .createHash('sha256')
+        .update(resetToken)
+        .digest('hex');
+
+      // Set expire time (10 minutes)
+      user.resetPasswordExpire = Date.now() + 10 * 60 * 1000;
+
       await user.save();
 
-      console.error('Email send error:', emailError);
-      
-      // In development, still provide the token if email fails
-      if (process.env.NODE_ENV === 'development') {
-        return res.json({
-          message: 'Email service unavailable. Here is your reset token for development:',
-          resetToken,
-          resetUrl: `${process.env.FRONTEND_URL}/reset-password/${resetToken}`
+      try {
+        // Send password reset email
+        await sendPasswordResetEmail(user.email, resetToken, user.name);
+        
+        res.json({
+          method: 'email',
+          message: 'Password reset email sent successfully. Please check your email for instructions.',
+        });
+
+      } catch (emailError) {
+        // If email fails, clean up the reset token
+        user.resetPasswordToken = undefined;
+        user.resetPasswordExpire = undefined;
+        await user.save();
+
+        console.error('Email send error:', emailError);
+        
+        // In development, still provide the token if email fails
+        if (process.env.NODE_ENV === 'development') {
+          return res.json({
+            method: 'email',
+            message: 'Email service unavailable. Here is your reset token for development:',
+            resetToken,
+            resetUrl: `${process.env.FRONTEND_URL}/reset-password/${resetToken}`
+          });
+        }
+
+        return res.status(500).json({ 
+          message: 'Email could not be sent. Please try again later.' 
         });
       }
-
-      return res.status(500).json({ 
-        message: 'Email could not be sent. Please try again later.' 
+      
+    } else {
+      // PHONE-BASED RESET: Generate 6-digit OTP
+      const otp = Math.floor(100000 + Math.random() * 900000).toString();
+      
+      // Store OTP (in production, hash this for security)
+      user.resetPasswordOTP = otp;
+      user.resetPasswordOTPExpire = Date.now() + 10 * 60 * 1000; // 10 minutes
+      
+      await user.save();
+      
+      // TODO: In production, integrate SMS service (Twilio, MSG91, etc.)
+      // For now, just log OTP in development mode for testing
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`OTP for ${user.phone}: ${otp}`);
+      }
+      
+      // In production, send actual SMS here
+      // await sendSMS(user.phone, `Your VillageCrunch password reset OTP is: ${otp}. Valid for 10 minutes.`);
+      
+      res.json({
+        method: 'phone',
+        message: `OTP sent to ${user.phone.substring(0, 3)}****${user.phone.substring(user.phone.length - 2)}`,
+        phone: user.phone
       });
     }
 
   } catch (error) {
     console.error('Forgot password error:', error);
+    res.status(500).json({ message: 'Server error. Please try again later.' });
+  }
+});
+
+// 🧩 VERIFY OTP (for phone-based reset)
+router.post('/verify-otp', async (req, res) => {
+  try {
+    const { phone, otp } = req.body;
+    
+    if (!phone || !otp) {
+      return res.status(400).json({ message: 'Phone number and OTP are required' });
+    }
+    
+    const user = await User.findOne({
+      phone,
+      resetPasswordOTP: otp,
+      resetPasswordOTPExpire: { $gt: Date.now() }
+    });
+    
+    if (!user) {
+      return res.status(400).json({ message: 'Invalid or expired OTP' });
+    }
+    
+    // Generate a temporary token for password reset
+    const resetToken = crypto.randomBytes(20).toString('hex');
+    user.resetPasswordToken = crypto
+      .createHash('sha256')
+      .update(resetToken)
+      .digest('hex');
+    user.resetPasswordExpire = Date.now() + 10 * 60 * 1000;
+    
+    // Clear OTP
+    user.resetPasswordOTP = undefined;
+    user.resetPasswordOTPExpire = undefined;
+    
+    await user.save();
+    
+    res.json({
+      message: 'OTP verified successfully',
+      resetToken,
+      userId: user._id
+    });
+    
+  } catch (error) {
+    console.error('OTP verification error:', error);
     res.status(500).json({ message: 'Server error. Please try again later.' });
   }
 });
