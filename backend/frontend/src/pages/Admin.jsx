@@ -8,6 +8,7 @@ import {
   Search,
   Filter,
   ChevronDown,
+  ChevronUp,
   Edit,
   MapPin,
   Phone,
@@ -128,6 +129,7 @@ const Admin = () => {
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [savingProduct, setSavingProduct] = useState(false);
   const [addingProduct, setAddingProduct] = useState(false);
+  const [expandedOrders, setExpandedOrders] = useState(new Set());
   const [editingProduct, setEditingProduct] = useState(null);
   const [deletingProduct, setDeletingProduct] = useState(null);
   const [productSearchTerm, setProductSearchTerm] = useState('');
@@ -280,6 +282,19 @@ const Admin = () => {
       borderColor: 'border-green-200',
       label: 'Resolved',
     },
+  };
+
+  // Toggle expanded order state
+  const toggleOrderExpanded = (orderId) => {
+    setExpandedOrders(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(orderId)) {
+        newSet.delete(orderId);
+      } else {
+        newSet.add(orderId);
+      }
+      return newSet;
+    });
   };
 
   // ✅ Fetch all orders
@@ -1152,7 +1167,7 @@ const saveSettings = async (e) => {
               <table className="w-full">
               <thead className="bg-desi-cream">
                 <tr>
-                  {['Order #', 'Customer', 'Date', 'Items', 'Total', 'Payment', 'Status', 'Actions'].map(
+                  {['Order #', 'Customer', 'Date', 'Products & Items', 'Total', 'Payment', 'Status', 'Actions'].map(
                     (head) => (
                       <th key={head} className="px-6 py-4 text-left text-sm font-semibold text-desi-brown">
                         {head}
@@ -1177,18 +1192,73 @@ const saveSettings = async (e) => {
                       </td>
                       <td className="px-6 py-4 text-sm">{new Date(order.createdAt).toLocaleDateString('en-IN')}</td>
                       <td className="px-6 py-4 text-sm">
-                        <div className="space-y-1">
-                          <p className="font-medium">{order.items.length} items</p>
-                          <div className="text-xs text-gray-500 max-w-32">
+                        <div className="space-y-2">
+                          <p className="font-medium text-gray-900">{order.items.length} items</p>
+                          <div className="space-y-1">
+                            {/* Always show first 2 items with details */}
                             {order.items?.slice(0, 2).map((item, index) => (
-                              <div key={index} className="truncate">
-                                {item.quantity}× {item.product?.name || item.name || 'Product'}
+                              <div key={index} className="text-xs text-gray-700 bg-gray-50 px-2 py-1 rounded border">
+                                <div className="font-medium truncate">
+                                  {item.product?.name || item.name || 'Product'}
+                                </div>
+                                <div className="text-gray-500 flex justify-between">
+                                  <span>Qty: {item.quantity}</span>
+                                  <span>₹{item.price}</span>
+                                </div>
+                                {item.weight && (
+                                  <div className="text-gray-400 text-xs">{item.weight}</div>
+                                )}
                               </div>
                             ))}
-                            {order.items?.length > 2 && (
-                              <div className="text-gray-400">
-                                +{order.items.length - 2} more...
+                            
+                            {/* Expandable section for remaining items */}
+                            {expandedOrders.has(order._id) && order.items.length > 2 && (
+                              <div className="space-y-1">
+                                {order.items.slice(2).map((item, index) => (
+                                  <div key={index + 2} className="text-xs text-gray-700 bg-gray-50 px-2 py-1 rounded border">
+                                    <div className="font-medium truncate">
+                                      {item.product?.name || item.name || 'Product'}
+                                    </div>
+                                    <div className="text-gray-500 flex justify-between">
+                                      <span>Qty: {item.quantity}</span>
+                                      <span>₹{item.price}</span>
+                                    </div>
+                                    {item.weight && (
+                                      <div className="text-gray-400 text-xs">{item.weight}</div>
+                                    )}
+                                  </div>
+                                ))}
+                                {/* Order summary when expanded */}
+                                <div className="text-xs bg-desi-cream px-2 py-1 rounded border border-desi-gold mt-2">
+                                  <div className="flex justify-between font-medium text-desi-brown">
+                                    <span>Order Total:</span>
+                                    <span>₹{order.totalPrice.toFixed(2)}</span>
+                                  </div>
+                                </div>
                               </div>
+                            )}
+                            
+                            {/* Clickable expand/collapse button */}
+                            {order.items?.length > 2 && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  toggleOrderExpanded(order._id);
+                                }}
+                                className="text-xs text-desi-gold hover:text-desi-brown font-medium flex items-center gap-1 px-2 py-1 rounded hover:bg-yellow-50 transition-colors"
+                              >
+                                {expandedOrders.has(order._id) ? (
+                                  <>
+                                    <ChevronUp className="w-3 h-3" />
+                                    Show less
+                                  </>
+                                ) : (
+                                  <>
+                                    <ChevronDown className="w-3 h-3" />
+                                    +{order.items.length - 2} more items
+                                  </>
+                                )}
+                              </button>
                             )}
                           </div>
                         </div>
