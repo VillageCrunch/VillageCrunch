@@ -275,7 +275,110 @@ const sendOrderConfirmationEmail = async (email, orderData) => {
   }
 };
 
+// Send order notification to admin
+const sendAdminOrderNotification = async (orderData, userData) => {
+  try {
+    const transporter = createTransporter();
+
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <title>New Order Alert - VillageCrunch Admin</title>
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; margin: 0; padding: 20px; background-color: #f5f5f5; }
+            .container { max-width: 600px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; }
+            .header { text-align: center; color: #8B4513; border-bottom: 2px solid #D4AF37; padding-bottom: 20px; }
+            .alert { background: #ffebee; border: 1px solid #f44336; padding: 15px; border-radius: 5px; margin: 20px 0; }
+            .customer-info { background: #e3f2fd; padding: 15px; border-radius: 5px; margin: 15px 0; }
+            .order-details { margin: 20px 0; }
+            .item { border-bottom: 1px solid #eee; padding: 10px 0; }
+            .total { font-weight: bold; font-size: 18px; color: #8B4513; }
+            .address { background: #f1f8e9; padding: 10px; border-radius: 5px; margin: 10px 0; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>🥜 VillageCrunch - Admin Alert</h1>
+              <h2>New Order Received!</h2>
+            </div>
+            
+            <div class="alert">
+              <h3>🚨 NEW ORDER: #${orderData.orderNumber}</h3>
+              <p><strong>Order Date:</strong> ${new Date(orderData.createdAt || Date.now()).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}</p>
+              <p><strong>Payment Method:</strong> ${orderData.paymentInfo.method.toUpperCase()}</p>
+              <p><strong>Order Status:</strong> ${orderData.status.toUpperCase()}</p>
+            </div>
+
+            <div class="customer-info">
+              <h3>👤 Customer Information</h3>
+              <p><strong>Name:</strong> ${userData.name}</p>
+              <p><strong>Email:</strong> ${userData.email}</p>
+              <p><strong>Phone:</strong> ${userData.phone}</p>
+            </div>
+
+            <div class="address">
+              <h3>📍 Shipping Address</h3>
+              <p><strong>Delivery To:</strong> ${orderData.shippingAddress.name}</p>
+              <p><strong>Phone:</strong> ${orderData.shippingAddress.phone}</p>
+              <p><strong>Address:</strong> ${orderData.shippingAddress.street}</p>
+              <p><strong>City:</strong> ${orderData.shippingAddress.city}, ${orderData.shippingAddress.state}</p>
+              <p><strong>Pincode:</strong> ${orderData.shippingAddress.pincode}</p>
+            </div>
+
+            <div class="order-details">
+              <h3>🛍️ Order Items</h3>
+              ${orderData.items.map(item => `
+                <div class="item">
+                  <strong>${item.name}</strong><br>
+                  <small>Weight: ${item.weight || 'N/A'}</small><br>
+                  Quantity: ${item.quantity} × ₹${item.price} = <strong>₹${item.price * item.quantity}</strong>
+                </div>
+              `).join('')}
+              
+              <div style="margin-top: 15px; padding-top: 15px; border-top: 2px solid #ddd;">
+                <p>Items Price: ₹${orderData.itemsPrice}</p>
+                <p>Shipping: ₹${orderData.shippingPrice}</p>
+                <p>Tax: ₹${orderData.taxPrice}</p>
+                ${orderData.promocodeDiscount > 0 ? `<p>Discount (${orderData.promocode?.code}): -₹${orderData.promocodeDiscount}</p>` : ''}
+                <div class="total">Total Amount: ₹${orderData.totalPrice}</div>
+              </div>
+            </div>
+
+            <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd;">
+              <p><strong>⚡ Action Required:</strong> Please process this order in your admin panel</p>
+              <p style="color: #666; font-size: 12px;">This is an automated notification from VillageCrunch</p>
+            </div>
+          </div>
+        </body>
+      </html>
+    `;
+
+    const mailOptions = {
+      from: {
+        name: 'VillageCrunch System',
+        address: process.env.EMAIL_USER
+      },
+      to: 'sauravsinghking9876@gmail.com',
+      subject: `🚨 New Order Alert #${orderData.orderNumber} - ₹${orderData.totalPrice} - VillageCrunch`,
+      html: htmlContent,
+    };
+
+    const info = await transporter.sendMail(mailOptions);
+    console.log('✅ Admin notification email sent:', info.messageId);
+    return { success: true, messageId: info.messageId };
+
+  } catch (error) {
+    console.error('❌ Error sending admin notification email:', error);
+    // Don't throw error to prevent order creation failure
+    return { success: false, error: error.message };
+  }
+};
+
 module.exports = {
   sendPasswordResetEmail,
   sendOrderConfirmationEmail,
+  sendAdminOrderNotification,
 };

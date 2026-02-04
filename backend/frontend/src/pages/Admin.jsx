@@ -29,6 +29,7 @@ import {
   Tag,
   Settings,
   BarChart3,
+  ShoppingBag,
 } from 'lucide-react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
@@ -1168,8 +1169,11 @@ const saveSettings = async (e) => {
                     <tr key={order._id} className="hover:bg-gray-50 transition">
                       <td className="px-6 py-4 font-mono font-semibold">#{order.orderNumber}</td>
                       <td className="px-6 py-4">
-                        <p className="font-medium">{order.shippingAddress?.name}</p>
-                        <p className="text-sm text-gray-600">{order.shippingAddress?.phone}</p>
+                        <div className="space-y-1">
+                          <p className="font-medium text-gray-900">{order.user?.name || order.shippingAddress?.name}</p>
+                          <p className="text-sm text-gray-600">{order.user?.email}</p>
+                          <p className="text-sm text-gray-500">{order.user?.phone || order.shippingAddress?.phone}</p>
+                        </div>
                       </td>
                       <td className="px-6 py-4 text-sm">{new Date(order.createdAt).toLocaleDateString('en-IN')}</td>
                       <td className="px-6 py-4 text-sm">{order.items.length} items</td>
@@ -1225,12 +1229,64 @@ const saveSettings = async (e) => {
               <div className="border-t pt-4">
                 <h3 className="font-bold text-lg mb-4 text-desi-brown flex items-center">
                   <User className="w-5 h-5 mr-2" />
-                  Customer Info
+                  Customer Information
                 </h3>
-                <div className="bg-gray-50 p-4 rounded-lg space-y-2">
-                  <p><strong>Name:</strong> {selectedOrder.shippingAddress.name}</p>
-                  <p><Phone className="w-4 h-4 inline mr-2" />{selectedOrder.shippingAddress.phone}</p>
-                  <p><MapPin className="w-4 h-4 inline mr-2" />{selectedOrder.shippingAddress.street}, {selectedOrder.shippingAddress.city}, {selectedOrder.shippingAddress.state} - {selectedOrder.shippingAddress.pincode}</p>
+                <div className="grid md:grid-cols-2 gap-4">
+                  {/* Customer Account Details */}
+                  <div className="bg-blue-50 p-4 rounded-lg">
+                    <h4 className="font-semibold text-blue-800 mb-3">Account Details</h4>
+                    <div className="space-y-2 text-sm">
+                      <p><strong>Name:</strong> {selectedOrder.user?.name || 'N/A'}</p>
+                      <p><strong>Email:</strong> {selectedOrder.user?.email || 'N/A'}</p>
+                      <p><strong>Phone:</strong> {selectedOrder.user?.phone || 'N/A'}</p>
+                    </div>
+                  </div>
+                  
+                  {/* Shipping Address */}
+                  <div className="bg-green-50 p-4 rounded-lg">
+                    <h4 className="font-semibold text-green-800 mb-3">Shipping Address</h4>
+                    <div className="space-y-2 text-sm">
+                      <p><strong>Deliver To:</strong> {selectedOrder.shippingAddress?.name}</p>
+                      <p><Phone className="w-4 h-4 inline mr-2" />{selectedOrder.shippingAddress?.phone}</p>
+                      <p><MapPin className="w-4 h-4 inline mr-2" />
+                        {selectedOrder.shippingAddress?.street}, {selectedOrder.shippingAddress?.city}, {selectedOrder.shippingAddress?.state} - {selectedOrder.shippingAddress?.pincode}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Order Summary */}
+              <div className="border-t pt-4">
+                <h3 className="font-bold text-lg mb-4 text-desi-brown flex items-center">
+                  <ShoppingBag className="w-5 h-5 mr-2" />
+                  Order Summary
+                </h3>
+                <div className="bg-gray-50 p-4 rounded-lg space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span><strong>Order #:</strong></span>
+                    <span className="font-mono font-bold">#{selectedOrder.orderNumber}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span><strong>Order Date:</strong></span>
+                    <span>{new Date(selectedOrder.createdAt).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span><strong>Payment Method:</strong></span>
+                    <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                      selectedOrder.isPaid ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
+                    }`}>
+                      {selectedOrder.paymentInfo?.method?.toUpperCase()} {selectedOrder.isPaid ? '(Paid)' : '(Pending)'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span><strong>Items:</strong></span>
+                    <span>{selectedOrder.items?.length || 0} items</span>
+                  </div>
+                  <div className="flex justify-between items-center text-lg font-bold border-t pt-2">
+                    <span>Total Amount:</span>
+                    <span className="text-desi-brown">₹{selectedOrder.totalPrice?.toFixed(2)}</span>
+                  </div>
                 </div>
               </div>
 
