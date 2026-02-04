@@ -3,6 +3,8 @@ const router = express.Router();
 const Order = require('../models/Order');
 const User = require('../models/User');
 const { protect, admin } = require('../middleware/auth');
+const { sendOrderConfirmationEmail, sendAdminOrderNotification } = require('../config/email');
+const { sendAdminOrderSMS, sendCustomerOrderSMS } = require('../config/sms');
 
 // Generate unique order number
 const generateOrderNumber = () => {
@@ -81,6 +83,42 @@ router.post('/', protect, async (req, res) => {
     // ✅ Link the order to the user
     await User.findByIdAndUpdate(req.user._id, { $push: { orders: order._id } });
 
+    // 📧📱 Send notifications (don't let notification failures affect order creation)
+    try {
+      // Send confirmation to customer
+      const populatedOrder = await Order.findById(order._id).populate('items.product', 'name image');
+      
+      // Email to customer
+      await sendOrderConfirmationEmail(req.user.email, populatedOrder);
+      console.log('✅ Customer confirmation email sent to:', req.user.email);
+
+      // SMS to customer (if they have phone number)
+      if (req.user.phone) {
+        await sendCustomerOrderSMS(req.user.phone, populatedOrder);
+        console.log('✅ Customer confirmation SMS sent to:', req.user.phone);
+      }
+
+      // Email notification to admin
+      await sendAdminOrderNotification(populatedOrder, {
+        name: req.user.name,
+        email: req.user.email,
+        phone: req.user.phone
+      });
+      console.log('✅ Admin email notification sent for order:', order.orderNumber);
+
+      // SMS notification to admin
+      await sendAdminOrderSMS(populatedOrder, {
+        name: req.user.name,
+        email: req.user.email,
+        phone: req.user.phone
+      });
+      console.log('✅ Admin SMS notification sent for order:', order.orderNumber);
+
+    } catch (notificationError) {
+      console.error('❌ Notification sending failed:', notificationError.message);
+      // Continue with order creation even if notifications fail
+    }
+
     res.status(201).json(order);
   } catch (error) {
     res.status(500).json({ 
@@ -111,14 +149,17 @@ router.get('/:id', protect, async (req, res) => {
   try {
     const order = await Order.findById(req.params.id)
       .populate('user', 'name email phone')
-      .populate('items.product', 'name image');
+      .populate('items.product', 'name image price');
 
     if (!order) {
       return res.status(404).json({ message: 'Order not found' });
     }
 
-    // ✅ Only the user who created the order can view it
-    if (order.user._id.toString() !== req.user._id.toString()) {
+    // Check if user is admin or order owner
+    const isAdmin = req.user.role === 'admin';
+    const isOrderOwner = order.user._id.toString() === req.user._id.toString();
+    
+    if (!isAdmin && !isOrderOwner) {
       return res.status(403).json({ message: 'Not authorized to view this order' });
     }
 
@@ -159,7 +200,8 @@ router.put('/:id/pay', protect, async (req, res) => {
 router.get('/', protect, admin, async (req, res) => {
   try {
     const orders = await Order.find({})
-      .populate('user', 'name email')
+      .populate('user', 'name email phone')
+      .populate('items.product', 'name image price')
       .sort({ createdAt: -1 });
     res.json(orders);
   } catch (error) {
