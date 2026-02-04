@@ -1176,7 +1176,23 @@ const saveSettings = async (e) => {
                         </div>
                       </td>
                       <td className="px-6 py-4 text-sm">{new Date(order.createdAt).toLocaleDateString('en-IN')}</td>
-                      <td className="px-6 py-4 text-sm">{order.items.length} items</td>
+                      <td className="px-6 py-4 text-sm">
+                        <div className="space-y-1">
+                          <p className="font-medium">{order.items.length} items</p>
+                          <div className="text-xs text-gray-500 max-w-32">
+                            {order.items?.slice(0, 2).map((item, index) => (
+                              <div key={index} className="truncate">
+                                {item.quantity}× {item.product?.name || item.name || 'Product'}
+                              </div>
+                            ))}
+                            {order.items?.length > 2 && (
+                              <div className="text-gray-400">
+                                +{order.items.length - 2} more...
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </td>
                       <td className="px-6 py-4 font-semibold">₹{order.totalPrice.toFixed(2)}</td>
                       <td className="px-6 py-4">
                         <span
@@ -1287,6 +1303,72 @@ const saveSettings = async (e) => {
                     <span>Total Amount:</span>
                     <span className="text-desi-brown">₹{selectedOrder.totalPrice?.toFixed(2)}</span>
                   </div>
+                </div>
+              </div>
+
+              {/* Ordered Products */}
+              <div className="border-t pt-4">
+                <h3 className="font-bold text-lg mb-4 text-desi-brown flex items-center">
+                  <Package className="w-5 h-5 mr-2" />
+                  Ordered Products
+                </h3>
+                <div className="space-y-3">
+                  {selectedOrder.items?.map((item, index) => (
+                    <div key={index} className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition">
+                      <div className="flex items-center space-x-4">
+                        {/* Product Image */}
+                        <div className="w-16 h-16 bg-gray-100 rounded-lg flex-shrink-0 overflow-hidden">
+                          {item.product?.image || item.image ? (
+                            <img 
+                              src={item.product?.image || item.image} 
+                              alt={item.product?.name || item.name}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                e.target.style.display = 'none';
+                                e.target.nextSibling.style.display = 'flex';
+                              }}
+                            />
+                          ) : null}
+                          <div className="w-full h-full bg-gray-200 flex items-center justify-center text-gray-400">
+                            <Package className="w-6 h-6" />
+                          </div>
+                        </div>
+                        
+                        {/* Product Details */}
+                        <div className="flex-1">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <h4 className="font-semibold text-gray-900 mb-1">
+                                {item.product?.name || item.name || 'Product Name Not Available'}
+                              </h4>
+                              <div className="text-sm text-gray-600 space-y-1">
+                                {item.weight && (
+                                  <p><strong>Weight:</strong> {item.weight}</p>
+                                )}
+                                <p><strong>Unit Price:</strong> ₹{item.price?.toFixed(2)}</p>
+                                <p><strong>Quantity:</strong> {item.quantity}</p>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-lg font-bold text-desi-brown">
+                                ₹{(item.price * item.quantity).toFixed(2)}
+                              </p>
+                              <p className="text-sm text-gray-500">
+                                ₹{item.price} × {item.quantity}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  
+                  {(!selectedOrder.items || selectedOrder.items.length === 0) && (
+                    <div className="text-center py-8 text-gray-500">
+                      <Package className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                      <p>No product details available</p>
+                    </div>
+                  )}
                 </div>
               </div>
 
