@@ -361,7 +361,7 @@ const sendAdminOrderNotification = async (orderData, userData) => {
         name: 'VillageCrunch System',
         address: process.env.EMAIL_USER
       },
-      to: 'sauravsinghking9876@gmail.com',
+      to: process.env.EMAIL_USER || 'sauravsinghking9876@gmail.com',
       subject: `🚨 New Order Alert #${orderData.orderNumber} - ₹${orderData.totalPrice} - VillageCrunch`,
       html: htmlContent,
     };

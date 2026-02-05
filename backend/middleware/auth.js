@@ -1,6 +1,27 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
+// Security logging middleware
+const logSecurityEvent = (req, eventType, details) => {
+  const timestamp = new Date().toISOString();
+  const userInfo = req.user ? {
+    id: req.user._id,
+    email: req.user.email,
+    role: req.user.role
+  } : 'Anonymous';
+  
+  console.log(`🛡️ SECURITY LOG [${timestamp}]:`);
+  console.log(`🛡️ Event: ${eventType}`);
+  console.log(`🛡️ User: ${JSON.stringify(userInfo)}`);
+  console.log(`🛡️ IP: ${req.ip}`);
+  console.log(`🛡️ User-Agent: ${req.get('User-Agent')}`);
+  console.log(`🛡️ Path: ${req.method} ${req.originalUrl}`);
+  if (details) {
+    console.log(`🛡️ Details: ${JSON.stringify(details)}`);
+  }
+  console.log('🛡️ =====================================');
+};
+
 const protect = async (req, res, next) => {
   try {
     let token;
@@ -26,4 +47,4 @@ const admin = (req, res, next) => {
   else res.status(403).json({ message: 'Not authorized as admin' });
 };
 
-module.exports = { protect, admin };
+module.exports = { protect, admin, logSecurityEvent };

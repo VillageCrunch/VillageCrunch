@@ -5,6 +5,7 @@ const User = require('../models/User');
 const { protect, admin } = require('../middleware/auth');
 const { sendOrderConfirmationEmail, sendAdminOrderNotification } = require('../config/email');
 const { sendAdminOrderSMS, sendCustomerOrderSMS } = require('../config/sms');
+const { orderRateLimit, securityMonitor, validatePrices } = require('../middleware/security');
 
 // Generate unique order number
 const generateOrderNumber = () => {
@@ -17,7 +18,7 @@ const generateOrderNumber = () => {
 // @route   POST /api/orders
 // @desc    Create new order and link to user
 // @access  Private
-router.post('/', protect, async (req, res) => {
+router.post('/', protect, orderRateLimit, securityMonitor, validatePrices, async (req, res) => {
   try {
     const {
       items,
@@ -44,26 +45,138 @@ router.post('/', protect, async (req, res) => {
       return res.status(400).json({ message: 'Payment method is required' });
     }
 
+    // 🔒 CRITICAL SECURITY: SERVER-SIDE PRICE VALIDATION
+    console.log('🔍 SECURITY: Starting price validation for order creation');
+    console.log('🔍 User:', req.user._id, 'IP:', req.ip);
+    console.log('🔍 Submitted items:', JSON.stringify(items, null, 2));
+    console.log('🔍 Submitted totals:', { itemsPrice, totalPrice, shippingPrice, taxPrice });
+    
     // Validate items structure
     for (let item of items) {
       if (!item.product || !item.quantity || !item.price) {
+        console.log('❌ SECURITY ALERT: Invalid item structure detected');
         return res.status(400).json({ message: 'Invalid item structure' });
       }
     }
 
+    // 🔒 CRITICAL: Validate all item prices against database
+    const Product = require('../models/Product');
+    let calculatedItemsPrice = 0;
+    const validatedItems = [];
+    
+    for (let item of items) {
+      const product = await Product.findById(item.product);
+      
+      if (!product) {
+        console.log('❌ SECURITY ALERT: Product not found:', item.product);
+        return res.status(400).json({ message: `Product ${item.product} not found` });
+      }
+      
+      // Check stock availability
+      if (product.stock < item.quantity) {
+        console.log('❌ SECURITY ALERT: Insufficient stock for product:', item.product);
+        return res.status(400).json({ 
+          message: `Insufficient stock for ${product.name}. Available: ${product.stock}, Requested: ${item.quantity}` 
+        });
+      }
+      
+      // 🔒 CRITICAL: Validate submitted price matches database price
+      if (parseFloat(item.price) !== parseFloat(product.price)) {
+        console.log('🚨 CRITICAL SECURITY ALERT: Price manipulation detected!');
+        console.log('🚨 Product:', product.name);
+        console.log('🚨 Database price:', product.price);
+        console.log('🚨 Submitted price:', item.price);
+        console.log('🚨 User:', req.user._id, req.user.email);
+        console.log('🚨 IP Address:', req.ip);
+        console.log('🚨 User Agent:', req.get('User-Agent'));
+        
+        // Log for security monitoring
+        console.log('🚨 POTENTIAL FRAUD ATTEMPT BLOCKED');
+        
+        return res.status(400).json({ 
+          message: 'Price validation failed. Please refresh and try again.',
+          code: 'PRICE_VALIDATION_ERROR'
+        });
+      }
+      
+      // Calculate actual item total
+      const itemTotal = parseFloat(product.price) * parseInt(item.quantity);
+      calculatedItemsPrice += itemTotal;
+      
+      // Store validated item with actual database price
+      validatedItems.push({
+        product: item.product,
+        name: product.name,
+        quantity: parseInt(item.quantity),
+        price: parseFloat(product.price), // Use database price, not submitted price
+        image: product.image,
+        weight: product.weight
+      });
+    }
+    
+    // 🔒 CRITICAL: Validate submitted itemsPrice matches calculated total
+    const submittedItemsPrice = parseFloat(itemsPrice);
+    if (Math.abs(submittedItemsPrice - calculatedItemsPrice) > 0.01) { // Allow 1 paisa tolerance for rounding
+      console.log('🚨 CRITICAL SECURITY ALERT: Items price manipulation detected!');
+      console.log('🚨 Calculated items price:', calculatedItemsPrice);
+      console.log('🚨 Submitted items price:', submittedItemsPrice);
+      console.log('🚨 User:', req.user._id, req.user.email);
+      
+      return res.status(400).json({ 
+        message: 'Order total validation failed. Please refresh and try again.',
+        code: 'TOTAL_VALIDATION_ERROR'
+      });
+    }
+    
+    // 🔒 Validate shipping and tax calculations (basic validation)
+    const expectedShipping = calculatedItemsPrice >= 500 ? 0 : 50; // Basic rule
+    const expectedTax = calculatedItemsPrice * 0.18; // 18% GST
+    
+    if (Math.abs(parseFloat(shippingPrice) - expectedShipping) > 0.01 && paymentInfo.method !== 'cod') {
+      console.log('⚠️ WARNING: Shipping price discrepancy detected');
+      console.log('⚠️ Expected shipping:', expectedShipping, 'Submitted:', shippingPrice);
+    }
+    
+    // 🔒 Final total validation
+    const expectedTotal = calculatedItemsPrice + parseFloat(shippingPrice) + parseFloat(taxPrice) - (parseFloat(promocodeDiscount) || 0);
+    if (Math.abs(parseFloat(totalPrice) - expectedTotal) > 0.01) {
+      console.log('🚨 CRITICAL SECURITY ALERT: Total price manipulation detected!');
+      console.log('🚨 Calculated total:', expectedTotal);
+      console.log('🚨 Submitted total:', totalPrice);
+      
+      return res.status(400).json({ 
+        message: 'Final order total validation failed. Please refresh and try again.',
+        code: 'FINAL_TOTAL_VALIDATION_ERROR'
+      });
+    }
+    
+    console.log('✅ SECURITY: All price validations passed');
+    console.log('✅ Validated items price:', calculatedItemsPrice);
+    console.log('✅ Final total:', expectedTotal);
+
+    // 🔒 Use validated data for order creation
     const orderData = {
       user: req.user._id,
       orderNumber: generateOrderNumber(),
-      items,
+      items: validatedItems, // Use server-validated items
       shippingAddress,
       paymentInfo,
-      itemsPrice: itemsPrice || 0,
-      shippingPrice: shippingPrice || 0,
-      taxPrice: taxPrice || 0,
-      totalPrice: totalPrice || 0,
+      itemsPrice: calculatedItemsPrice, // Use server-calculated price
+      shippingPrice: parseFloat(shippingPrice) || 0,
+      taxPrice: parseFloat(taxPrice) || 0,
+      totalPrice: parseFloat(totalPrice) || 0,
       promocode: promocode || null,
-      promocodeDiscount: promocodeDiscount || 0,
+      promocodeDiscount: parseFloat(promocodeDiscount) || 0,
     };
+    
+    // 🔒 Additional security logging
+    console.log('📦 Creating order with validated data:', {
+      user: req.user._id,
+      orderNumber: orderData.orderNumber,
+      itemsCount: validatedItems.length,
+      itemsPrice: calculatedItemsPrice,
+      totalPrice: parseFloat(totalPrice)
+    });
 
     // Handle COD orders
     if (paymentInfo.method === 'cod') {

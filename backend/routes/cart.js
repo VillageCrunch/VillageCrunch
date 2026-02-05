@@ -3,6 +3,7 @@ const router = express.Router();
 const Cart = require('../models/Cart');
 const Product = require('../models/Product');
 const { protect } = require('../middleware/auth');
+const { cartRateLimit, securityMonitor } = require('../middleware/security');
 
 // @route   GET /api/cart
 // @desc    Get user's cart
@@ -50,18 +51,47 @@ router.get('/', protect, async (req, res) => {
 // @route   POST /api/cart/add
 // @desc    Add item to cart
 // @access  Private
-router.post('/add', protect, async (req, res) => {
+router.post('/add', protect, cartRateLimit, securityMonitor, async (req, res) => {
   try {
-    const { productId, quantity = 1 } = req.body;
+    const { productId, quantity = 1, submittedPrice } = req.body;
 
     if (!productId) {
       return res.status(400).json({ message: 'Product ID is required' });
     }
+    
+    // 🔒 Security: Log cart additions for monitoring
+    console.log('🛒 CART SECURITY: Add item request');
+    console.log('🛒 User:', req.user._id);
+    console.log('🛒 Product:', productId);
+    console.log('🛒 Quantity:', quantity);
+    if (submittedPrice) console.log('🛒 Submitted price:', submittedPrice);
 
     // Verify product exists and get current price
     const product = await Product.findById(productId);
     if (!product) {
+      console.log('❌ CART SECURITY: Product not found:', productId);
       return res.status(404).json({ message: 'Product not found' });
+    }
+    
+    // 🔒 Security: Validate submitted price if provided
+    if (submittedPrice && parseFloat(submittedPrice) !== parseFloat(product.price)) {
+      console.log('🚨 CART SECURITY ALERT: Price manipulation attempt!');
+      console.log('🚨 Expected price:', product.price);
+      console.log('🚨 Submitted price:', submittedPrice);
+      console.log('🚨 User:', req.user._id, req.user.email);
+      
+      return res.status(400).json({ 
+        message: 'Price validation failed. Please refresh and try again.',
+        code: 'CART_PRICE_MISMATCH'
+      });
+    }
+    
+    // 🔒 Security: Validate reasonable quantity limits
+    if (quantity > 50) {
+      console.log('⚠️ CART SECURITY: Unusual quantity detected:', quantity);
+      return res.status(400).json({ 
+        message: 'Maximum quantity per item is 50' 
+      });
     }
 
     if (product.stock < quantity) {

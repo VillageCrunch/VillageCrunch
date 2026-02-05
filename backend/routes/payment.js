@@ -3,18 +3,75 @@ const router = express.Router();
 const crypto = require('crypto');
 const razorpay = require('../config/razorpay');
 const { protect } = require('../middleware/auth');
+const { paymentRateLimit, securityMonitor, validatePrices } = require('../middleware/security');
 
 // @route   POST /api/payment/create-order
 // @desc    Create Razorpay order with all payment methods enabled
 // @access  Private
-router.post('/create-order', protect, async (req, res) => {
+router.post('/create-order', protect, paymentRateLimit, securityMonitor, validatePrices, async (req, res) => {
   try {
     if (!razorpay) {
       return res.status(503).json({ 
         message: 'Payment service not configured. Please contact administrator.' 
       });
     }
-    const { amount } = req.body;
+    
+    const { amount, cartItems } = req.body;
+    
+    // 🔒 CRITICAL SECURITY: Validate payment amount against cart items
+    if (cartItems && cartItems.length > 0) {
+      const Product = require('../models/Product');
+      let calculatedAmount = 0;
+      
+      console.log('🔍 PAYMENT SECURITY: Validating payment amount');
+      console.log('🔍 User:', req.user._id);
+      console.log('🔍 Submitted amount:', amount);
+      console.log('🔍 Cart items:', cartItems);
+      
+      // Validate each cart item price
+      for (let item of cartItems) {
+        const product = await Product.findById(item.productId || item._id);
+        if (!product) {
+          console.log('❌ PAYMENT SECURITY: Product not found:', item.productId || item._id);
+          return res.status(400).json({ message: 'Invalid product in cart' });
+        }
+        
+        // Validate price match
+        if (parseFloat(item.price) !== parseFloat(product.price)) {
+          console.log('🚨 PAYMENT SECURITY ALERT: Price mismatch detected!');
+          console.log('🚨 Product:', product.name);
+          console.log('🚨 Database price:', product.price);
+          console.log('🚨 Submitted price:', item.price);
+          
+          return res.status(400).json({ 
+            message: 'Price validation failed. Please refresh your cart.',
+            code: 'PAYMENT_PRICE_MISMATCH'
+          });
+        }
+        
+        calculatedAmount += parseFloat(product.price) * parseInt(item.quantity);
+      }
+      
+      // Add basic shipping and tax (simplified calculation)
+      const shipping = calculatedAmount >= 500 ? 0 : 50;
+      const tax = calculatedAmount * 0.18;
+      const expectedTotal = calculatedAmount + shipping + tax;
+      
+      // Allow 1% tolerance for different calculation methods
+      if (Math.abs(parseFloat(amount) - expectedTotal) > (expectedTotal * 0.01)) {
+        console.log('🚨 PAYMENT SECURITY ALERT: Amount validation failed!');
+        console.log('🚨 Expected amount:', expectedTotal);
+        console.log('🚨 Submitted amount:', amount);
+        console.log('🚨 User:', req.user._id, req.user.email);
+        
+        return res.status(400).json({ 
+          message: 'Payment amount validation failed. Please try again.',
+          code: 'PAYMENT_AMOUNT_MISMATCH'
+        });
+      }
+      
+      console.log('✅ PAYMENT SECURITY: Amount validation passed');
+    }
 
     const options = {
       amount: amount * 100, // amount in paise (e.g., 1000 INR = 100000 paise)
