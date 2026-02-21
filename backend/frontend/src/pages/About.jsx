@@ -1,5 +1,6 @@
 import { Award, Heart, Leaf, Users } from 'lucide-react';
 import SEOHead from '../components/SEOHead';
+import FoundersSection from '../components/FoundersSection';
 
 const About = () => {
   return (
@@ -58,6 +59,9 @@ const About = () => {
           </div>
         </div>
       </section>
+
+      {/* Founders Section */}
+      <FoundersSection />
 
       {/* Values */}
       <section className="py-20 bg-desi-cream">
