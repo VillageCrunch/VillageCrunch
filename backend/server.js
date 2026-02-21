@@ -1,4 +1,4 @@
-require('dotenv').config();
+require('dotenv').config({ path: __dirname + '/.env' });
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -54,6 +54,7 @@ app.use('/api/auth', require('./routes/auth'));
 app.use('/api/products', require('./routes/products'));
 app.use('/api/orders', require('./routes/orders'));
 app.use('/api/payment', require('./routes/payment'));
+app.use('/api/live-orders', require('./routes/liveOrders'));
 app.use('/api/contact', require('./routes/contact'));
 app.use('/api/promocodes', require('./routes/promocodes'));
 app.use('/api/campaigns', require('./routes/campaigns'));

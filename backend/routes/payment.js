@@ -4,6 +4,8 @@ const crypto = require('crypto');
 const razorpay = require('../config/razorpay');
 const { protect } = require('../middleware/auth');
 const { paymentRateLimit, securityMonitor, validatePrices } = require('../middleware/security');
+const LiveOrder = require('../models/LiveOrder');
+const Product = require('../models/Product');
 
 // @route   POST /api/payment/create-order
 // @desc    Create Razorpay order with all payment methods enabled
@@ -20,7 +22,6 @@ router.post('/create-order', protect, paymentRateLimit, securityMonitor, validat
     
     // 🔒 CRITICAL SECURITY: Validate payment amount against cart items
     if (cartItems && cartItems.length > 0) {
-      const Product = require('../models/Product');
       let calculatedAmount = 0;
       
       console.log('🔍 PAYMENT SECURITY: Validating payment amount');
@@ -86,6 +87,81 @@ router.post('/create-order', protect, paymentRateLimit, securityMonitor, validat
 
     const order = await razorpay.orders.create(options);
     
+    // 💾 Save to live_orders collection for verification and order fulfillment
+    try {
+      // Prepare cart items with full product details
+      const enhancedCartItems = [];
+      let itemsPrice = 0;
+      
+      if (cartItems && cartItems.length > 0) {
+        for (let item of cartItems) {
+          const product = await Product.findById(item.productId || item._id);
+          if (product) {
+            const enhancedItem = {
+              productId: product._id,
+              name: product.name,
+              price: product.price,
+              quantity: item.quantity,
+              weight: product.weight,
+              image: product.images && product.images.length > 0 ? product.images[0] : '',
+              category: product.category,
+            };
+            enhancedCartItems.push(enhancedItem);
+            itemsPrice += product.price * item.quantity;
+          }
+        }
+      }
+      
+      // Calculate price breakdown
+      const shipping = itemsPrice >= 500 ? 0 : 50;
+      const tax = itemsPrice * 0.18;
+      const totalPrice = itemsPrice + shipping + tax;
+      
+      // Create live order record
+      const liveOrder = new LiveOrder({
+        razorpayOrderId: order.id,
+        user: req.user._id,
+        userInfo: {
+          userId: req.user._id.toString(),
+          name: req.user.name,
+          email: req.user.email,
+          phone: req.user.phone || '',
+        },
+        amount: amount,
+        currency: 'INR',
+        cartItems: enhancedCartItems,
+        priceBreakdown: {
+          itemsPrice: itemsPrice,
+          shippingPrice: shipping,
+          taxPrice: tax,
+          totalPrice: totalPrice,
+          promocodeDiscount: 0, // TODO: Add promocode logic if needed
+        },
+        status: 'created',
+        notes: new Map([
+          ['user_id', req.user._id.toString()],
+          ['user_name', req.user.name],
+          ['order_source', 'web'],
+          ['creation_time', new Date().toISOString()],
+        ]),
+      });
+      
+      await liveOrder.save();
+      
+      console.log('✅ LIVE ORDER SAVED:', {
+        liveOrderId: liveOrder._id,
+        razorpayOrderId: order.id,
+        userId: req.user._id,
+        amount: amount,
+        itemsCount: enhancedCartItems.length
+      });
+      
+    } catch (dbError) {
+      console.error('❌ Error saving live order to database:', dbError);
+      // Continue with payment flow even if DB save fails
+      // You might want to implement retry logic or alert system here
+    }
+
     res.json({
       orderId: order.id,
       amount: order.amount,
@@ -102,7 +178,7 @@ router.post('/create-order', protect, paymentRateLimit, securityMonitor, validat
 });
 
 // @route   POST /api/payment/verify
-// @desc    Verify Razorpay payment signature
+// @desc    Verify Razorpay payment signature and update live order
 // @access  Private
 router.post('/verify', protect, async (req, res) => {
   try {
@@ -115,11 +191,55 @@ router.post('/verify', protect, async (req, res) => {
       .digest('hex');
 
     if (expectedSignature === razorpaySignature) {
+      // 💾 Update live order status on successful payment verification
+      try {
+        const liveOrder = await LiveOrder.findOne({ razorpayOrderId: razorpayOrderId });
+        
+        if (liveOrder) {
+          liveOrder.razorpayPaymentId = razorpayPaymentId;
+          liveOrder.razorpaySignature = razorpaySignature;
+          liveOrder.paymentVerified = true;
+          liveOrder.status = 'paid';
+          
+          await liveOrder.save();
+          
+          console.log('✅ LIVE ORDER UPDATED ON PAYMENT VERIFICATION:', {
+            liveOrderId: liveOrder._id,
+            razorpayOrderId: razorpayOrderId,
+            razorpayPaymentId: razorpayPaymentId,
+            userId: liveOrder.user
+          });
+        } else {
+          console.log('⚠️  Live order not found for verification:', razorpayOrderId);
+        }
+      } catch (dbError) {
+        console.error('❌ Error updating live order on payment verification:', dbError);
+        // Continue with success response as payment is verified
+      }
+
       res.json({
         success: true,
         message: 'Payment verified successfully',
       });
     } else {
+      // 💾 Update live order status on failed payment verification
+      try {
+        const liveOrder = await LiveOrder.findOne({ razorpayOrderId: razorpayOrderId });
+        
+        if (liveOrder) {
+          liveOrder.status = 'payment_failed';
+          await liveOrder.save();
+          
+          console.log('❌ LIVE ORDER MARKED AS PAYMENT FAILED:', {
+            liveOrderId: liveOrder._id,
+            razorpayOrderId: razorpayOrderId,
+            reason: 'signature_mismatch'
+          });
+        }
+      } catch (dbError) {
+        console.error('❌ Error updating live order on payment failure:', dbError);
+      }
+
       res.status(400).json({
         success: false,
         message: 'Payment verification failed',
