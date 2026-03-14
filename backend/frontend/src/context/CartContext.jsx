@@ -12,6 +12,10 @@ import {
 
 const CartContext = createContext();
 
+const isRestrictedProduct = (product) => product?.category?.toLowerCase() === 'masala';
+const filterRestrictedCartItems = (items = []) => items.filter((item) => !isRestrictedProduct(item));
+const MASALA_BLOCKED_MESSAGE = 'Masala items are coming soon and cannot be purchased yet';
+
 export const useCart = () => {
   const context = useContext(CartContext);
   if (!context) {
@@ -36,13 +40,15 @@ export const CartProvider = ({ children }) => {
       try {
         setLoading(true);
         const cartData = await getCart();
-        setCartItems(cartData.items || []);
+        setCartItems(filterRestrictedCartItems(cartData.items || []));
       } catch (error) {
         console.error('Error loading cart:', error);
         // Fall back to local storage if API fails
         const savedCart = localStorage.getItem('cart');
         if (savedCart) {
-          setCartItems(JSON.parse(savedCart));
+          const filteredItems = filterRestrictedCartItems(JSON.parse(savedCart));
+          setCartItems(filteredItems);
+          localStorage.setItem('cart', JSON.stringify(filteredItems));
         }
       } finally {
         setLoading(false);
@@ -51,7 +57,9 @@ export const CartProvider = ({ children }) => {
       // User not logged in - load from localStorage
       const savedCart = localStorage.getItem('cart');
       if (savedCart) {
-        setCartItems(JSON.parse(savedCart));
+        const filteredItems = filterRestrictedCartItems(JSON.parse(savedCart));
+        setCartItems(filteredItems);
+        localStorage.setItem('cart', JSON.stringify(filteredItems));
       }
     }
   };
@@ -60,7 +68,7 @@ export const CartProvider = ({ children }) => {
   const syncCartOnLogin = async (localCartItems) => {
     if (user && localCartItems.length > 0) {
       try {
-        const syncResult = await apiSyncCart(localCartItems);
+        const syncResult = await apiSyncCart(filterRestrictedCartItems(localCartItems));
         setCartItems(syncResult.cart.items || []);
         // Clear local storage after successful sync
         localStorage.removeItem('cart');
@@ -80,6 +88,11 @@ export const CartProvider = ({ children }) => {
   }, [cartItems, user]);
 
   const addToCart = async (product, quantity = 1) => {
+    if (isRestrictedProduct(product)) {
+      toast.error(MASALA_BLOCKED_MESSAGE);
+      return;
+    }
+
     if (user) {
       // User is logged in - use API
       try {

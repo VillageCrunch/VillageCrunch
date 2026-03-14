@@ -102,6 +102,7 @@ const ProductCard = ({ product, showQuickRating = false, userCanRate = false, on
 
   const averageRating = calculateAverageRating(product.reviews);
   const reviewCount = product.reviews?.length || 0;
+  const isMasalaProduct = product.category === 'masala';
 
   // Generate a fallback ID if _id is missing (for products from JSON file)
   const productId = product._id || product.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
@@ -118,6 +119,11 @@ const ProductCard = ({ product, showQuickRating = false, userCanRate = false, on
         {product.originalPrice && (
           <div className="absolute top-4 left-4 bg-desi-terracotta text-white px-3 py-1 rounded-full text-sm font-semibold shadow-lg animate-scale-in">
             {Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF
+          </div>
+        )}
+        {isMasalaProduct && (
+          <div className="absolute bottom-4 left-4 bg-amber-500 text-white px-3 py-1 rounded-full text-xs font-bold uppercase tracking-[0.2em] shadow-lg">
+            Coming Soon
           </div>
         )}
         
@@ -150,6 +156,11 @@ const ProductCard = ({ product, showQuickRating = false, userCanRate = false, on
       </div>
 
       <div className="p-5">
+        {isMasalaProduct && (
+          <div className="mb-3 inline-flex items-center rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-amber-800">
+            Masala Launch Soon
+          </div>
+        )}
         {/* Rating display - interactive if user can rate, otherwise just display */}
         {(reviewCount > 0 || (showQuickRating && userCanRate)) && (
           <div className="flex items-center mb-2">
@@ -225,18 +236,24 @@ const ProductCard = ({ product, showQuickRating = false, userCanRate = false, on
           </div>
         </div>
 
-        <button
-          onClick={handleAddToCart}
-          disabled={product.stock === 0}
-          className={`w-full py-2 px-4 rounded-lg font-semibold flex items-center justify-center space-x-2 transition-all duration-300 transform hover:scale-[1.02] active:scale-95 ${
-            product.stock === 0
-              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-              : 'bg-desi-gold text-white hover:bg-yellow-600 hover:shadow-lg'
-          }`}
-        >
-          <ShoppingCart className="w-5 h-5" />
-          <span>{product.stock === 0 ? 'Out of Stock' : 'Add to Cart'}</span>
-        </button>
+        {isMasalaProduct ? (
+          <div className="w-full rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-center text-sm font-semibold text-amber-800">
+            Not available for purchase yet
+          </div>
+        ) : (
+          <button
+            onClick={handleAddToCart}
+            disabled={product.stock === 0}
+            className={`w-full py-2 px-4 rounded-lg font-semibold flex items-center justify-center space-x-2 transition-all duration-300 transform hover:scale-[1.02] active:scale-95 ${
+              product.stock === 0
+                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                : 'bg-desi-gold text-white hover:bg-yellow-600 hover:shadow-lg'
+            }`}
+          >
+            <ShoppingCart className="w-5 h-5" />
+            <span>{product.stock === 0 ? 'Out of Stock' : 'Add to Cart'}</span>
+          </button>
+        )}
       </div>
     </Link>
   );

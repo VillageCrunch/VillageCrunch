@@ -192,6 +192,11 @@ const ProductDetail = () => {
   };
 
   const handleAddToCart = () => {
+    if (product.category === 'masala') {
+      toast.error('Masala items are coming soon and cannot be purchased yet');
+      return;
+    }
+
     if (product.stock === 0) {
       toast.error('Product is out of stock');
       return;
@@ -349,6 +354,7 @@ const ProductDetail = () => {
   const relatedProducts = allProducts
     .filter(p => p.category === product.category && (p._id || p.name) !== (product._id || product.name))
     .slice(0, 4);
+  const isMasalaProduct = product.category === 'masala';
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -562,7 +568,7 @@ const ProductDetail = () => {
               </div>
 
               {/* Quantity Selector */}
-              {product.stock > 0 && (
+              {product.stock > 0 && !isMasalaProduct && (
                 <div className="flex items-center space-x-4">
                   <span className="text-gray-700 font-medium">Quantity:</span>
                   <div className="flex items-center border border-gray-300 rounded-lg">
@@ -587,18 +593,24 @@ const ProductDetail = () => {
 
               {/* Add to Cart and Wishlist Buttons */}
               <div className="flex space-x-4">
-                <button
-                  onClick={handleAddToCart}
-                  disabled={product.stock === 0}
-                  className={`flex-1 py-4 px-6 rounded-xl font-semibold flex items-center justify-center space-x-3 transition-all ${
-                    product.stock === 0
-                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                      : 'bg-desi-gold text-desi-brown hover:bg-yellow-500 transform hover:scale-105'
-                  }`}
-                >
-                  <ShoppingCart className="w-6 h-6" />
-                  <span>{product.stock === 0 ? 'Out of Stock' : `Add ${quantity} to Cart`}</span>
-                </button>
+                {isMasalaProduct ? (
+                  <div className="flex-1 rounded-xl border border-amber-200 bg-amber-50 px-6 py-4 text-sm font-semibold text-amber-800">
+                    Coming soon. This masala item is not available for purchase yet.
+                  </div>
+                ) : (
+                  <button
+                    onClick={handleAddToCart}
+                    disabled={product.stock === 0}
+                    className={`flex-1 py-4 px-6 rounded-xl font-semibold flex items-center justify-center space-x-3 transition-all ${
+                      product.stock === 0
+                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                        : 'bg-desi-gold text-desi-brown hover:bg-yellow-500 transform hover:scale-105'
+                    }`}
+                  >
+                    <ShoppingCart className="w-6 h-6" />
+                    <span>{product.stock === 0 ? 'Out of Stock' : `Add ${quantity} to Cart`}</span>
+                  </button>
+                )}
                 
                 {user && product._id && (
                   <button

@@ -7,6 +7,9 @@ const { sendOrderConfirmationEmail, sendAdminOrderNotification } = require('../c
 const { sendAdminOrderSMS, sendCustomerOrderSMS } = require('../config/sms');
 const { orderRateLimit, securityMonitor, validatePrices } = require('../middleware/security');
 
+const isMasalaProduct = (product) => product?.category?.toLowerCase() === 'masala';
+const MASALA_BLOCKED_MESSAGE = 'Masala items are coming soon and cannot be purchased yet';
+
 // Generate unique order number
 const generateOrderNumber = () => {
   const prefix = 'ORD';
@@ -70,6 +73,10 @@ router.post('/', protect, orderRateLimit, securityMonitor, validatePrices, async
       if (!product) {
         console.log('❌ SECURITY ALERT: Product not found:', item.product);
         return res.status(400).json({ message: `Product ${item.product} not found` });
+      }
+
+      if (isMasalaProduct(product)) {
+        return res.status(400).json({ message: MASALA_BLOCKED_MESSAGE });
       }
       
       // Check stock availability

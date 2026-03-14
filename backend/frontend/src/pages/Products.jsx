@@ -181,6 +181,17 @@ const Products = () => {
 
           {/* Products Grid */}
           <div className="flex-1">
+            {selectedCategory === 'masala' && (
+              <div className="mb-6 rounded-2xl border border-amber-200 bg-gradient-to-r from-amber-50 via-white to-orange-50 p-5 shadow-sm">
+                <div className="inline-flex items-center rounded-full bg-amber-500 px-3 py-1 text-xs font-bold uppercase tracking-[0.25em] text-white">
+                  Coming Soon
+                </div>
+                <h2 className="mt-3 text-2xl font-bold text-desi-brown">Masala section is on the way</h2>
+                <p className="mt-2 text-sm text-gray-700">
+                  We are preparing the masala range now. You can already browse the section, and every masala card is marked so customers know it is coming soon.
+                </p>
+              </div>
+            )}
             {loading ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {[...Array(6)].map((_, i) => (

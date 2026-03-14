@@ -1,7 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const Settings = require('../models/Settings');
+const Product = require('../models/Product');
 const { protect, admin } = require('../middleware/auth');
+
+const MASALA_BLOCKED_MESSAGE = 'Masala items are coming soon and cannot be purchased yet';
 
 // @route   GET /api/settings
 // @desc    Get all settings
@@ -111,6 +114,21 @@ router.post('/calculate-order-total', async (req, res) => {
   try {
     const { items, shippingMethod = 'standard', promocode } = req.body;
     const settings = await Settings.getSettings();
+
+    const productIds = items
+      .map((item) => item.productId || item.product || item._id)
+      .filter(Boolean);
+
+    if (productIds.length > 0) {
+      const restrictedProducts = await Product.find({
+        _id: { $in: productIds },
+        category: { $regex: /^masala$/i }
+      }).select('_id');
+
+      if (restrictedProducts.length > 0) {
+        return res.status(400).json({ message: MASALA_BLOCKED_MESSAGE });
+      }
+    }
     
     // Calculate subtotal
     let subtotal = 0;
