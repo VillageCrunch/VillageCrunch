@@ -72,7 +72,6 @@ const liveOrderSchema = new mongoose.Schema({
 
 // Index for efficient queries
 liveOrderSchema.index({ user: 1, status: 1 });
-liveOrderSchema.index({ razorpayOrderId: 1 });
 liveOrderSchema.index({ createdAt: -1 });
 
 // Method to convert LiveOrder to full Order

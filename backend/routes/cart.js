@@ -5,6 +5,9 @@ const Product = require('../models/Product');
 const { protect } = require('../middleware/auth');
 const { cartRateLimit, securityMonitor } = require('../middleware/security');
 
+const isMasalaProduct = (product) => product?.category?.toLowerCase() === 'masala';
+const MASALA_BLOCKED_MESSAGE = 'Masala items are coming soon and cannot be purchased yet';
+
 // @route   GET /api/cart
 // @desc    Get user's cart
 // @access  Private
@@ -18,7 +21,7 @@ router.get('/', protect, async (req, res) => {
     }
 
     // Filter out items where product no longer exists
-    const validItems = cart.items.filter(item => item.product);
+    const validItems = cart.items.filter(item => item.product && !isMasalaProduct(item.product));
     
     if (validItems.length !== cart.items.length) {
       cart.items = validItems;
@@ -71,6 +74,10 @@ router.post('/add', protect, cartRateLimit, securityMonitor, async (req, res) =>
     if (!product) {
       console.log('❌ CART SECURITY: Product not found:', productId);
       return res.status(404).json({ message: 'Product not found' });
+    }
+
+    if (isMasalaProduct(product)) {
+      return res.status(400).json({ message: MASALA_BLOCKED_MESSAGE });
     }
     
     // 🔒 Security: Validate submitted price if provided
@@ -159,6 +166,10 @@ router.put('/update', protect, async (req, res) => {
       const product = await Product.findById(productId);
       if (!product) {
         return res.status(404).json({ message: 'Product not found' });
+      }
+
+      if (isMasalaProduct(product)) {
+        return res.status(400).json({ message: MASALA_BLOCKED_MESSAGE });
       }
 
       if (product.stock < quantity) {
@@ -285,7 +296,7 @@ router.post('/sync', protect, async (req, res) => {
     // Merge local cart items with database cart
     for (const localItem of localCart) {
       const product = await Product.findById(localItem._id);
-      if (product && product.stock >= localItem.quantity) {
+      if (product && !isMasalaProduct(product) && product.stock >= localItem.quantity) {
         await cart.addItem(localItem._id, localItem.quantity, product.price);
       }
     }

@@ -10,7 +10,7 @@ const Footer = () => {
           <div>
             <h3 className="text-2xl font-bold mb-4 text-desi-gold">VillageCrunch</h3>
             <p className="text-sm text-gray-300 mb-4">
-              Premium quality dry fruits, makhana, and traditional Bihari thekua. 
+              Premium quality dry fruits, makhana, traditional Bihari thekua, and authentic spices. 
               Bringing authentic Indian flavors to your doorstep.
             </p>
             <div className="flex space-x-4">
@@ -48,6 +48,11 @@ const Footer = () => {
               <li>
                 <Link to="/products?category=thekua" className="text-sm hover:text-desi-gold transition">
                   Thekua
+                </Link>
+              </li>
+              <li>
+                <Link to="/products?category=masala" className="text-sm hover:text-desi-gold transition">
+                  Masala & Spices
                 </Link>
               </li>
             </ul>

@@ -73,19 +73,24 @@ const AIProductRecommendations = ({ currentProduct, category, limit = 4 }) => {
         }
 
         // 6. Cross-category intelligent pairing
-        // If buying makhana, suggest thekua or dry fruits
+        // If buying makhana, suggest thekua, dry fruits, or masala
         if (currentProduct.category === 'makhana' && 
-            (product.category === 'thekua' || product.category === 'dry-fruits')) {
+            (product.category === 'thekua' || product.category === 'dry-fruits' || product.category === 'masala')) {
           score += 20;
         }
-        // If buying thekua, suggest makhana or dry fruits
+        // If buying thekua, suggest makhana, dry fruits, or masala
         if (currentProduct.category === 'thekua' && 
-            (product.category === 'makhana' || product.category === 'dry-fruits')) {
+            (product.category === 'makhana' || product.category === 'dry-fruits' || product.category === 'masala')) {
           score += 20;
         }
-        // If buying dry fruits, suggest other dry fruits or makhana
+        // If buying dry fruits, suggest other dry fruits, makhana, or masala
         if (currentProduct.category === 'dry-fruits' && 
-            (product.category === 'dry-fruits' || product.category === 'makhana')) {
+            (product.category === 'dry-fruits' || product.category === 'makhana' || product.category === 'masala')) {
+          score += 15;
+        }
+        // If buying masala, suggest complementary masala, dry fruits, or makhana
+        if (currentProduct.category === 'masala' && 
+            (product.category === 'masala' || product.category === 'dry-fruits' || product.category === 'makhana')) {
           score += 15;
         }
 

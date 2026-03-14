@@ -86,6 +86,7 @@ const RatableProductCard = ({ product, orderId }) => {
   const averageRating = calculateAverageRating(product.reviews);
   const reviewCount = product.reviews?.length || 0;
   const productId = product._id || product.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+  const isMasalaProduct = product.category === 'masala';
 
   const handleAddToCart = (e) => {
     e.preventDefault();
@@ -194,18 +195,24 @@ const RatableProductCard = ({ product, orderId }) => {
           </div>
         </div>
 
-        <button
-          onClick={handleAddToCart}
-          disabled={product.stock === 0}
-          className={`w-full py-2 px-4 rounded-lg font-semibold flex items-center justify-center space-x-2 transition-all ${
-            product.stock === 0
-              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-              : 'bg-desi-gold text-white hover:bg-yellow-600'
-          }`}
-        >
-          <ShoppingCart className="w-5 h-5" />
-          <span>{product.stock === 0 ? 'Out of Stock' : 'Add to Cart'}</span>
-        </button>
+        {isMasalaProduct ? (
+          <div className="w-full rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-center text-sm font-semibold text-amber-800">
+            Not available for purchase yet
+          </div>
+        ) : (
+          <button
+            onClick={handleAddToCart}
+            disabled={product.stock === 0}
+            className={`w-full py-2 px-4 rounded-lg font-semibold flex items-center justify-center space-x-2 transition-all ${
+              product.stock === 0
+                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                : 'bg-desi-gold text-white hover:bg-yellow-600'
+            }`}
+          >
+            <ShoppingCart className="w-5 h-5" />
+            <span>{product.stock === 0 ? 'Out of Stock' : 'Add to Cart'}</span>
+          </button>
+        )}
       </div>
     </div>
   );

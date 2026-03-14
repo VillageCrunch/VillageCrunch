@@ -7,8 +7,8 @@ const About = () => {
     <div className="min-h-screen bg-gray-50">
       <SEOHead 
         title="About VillageCrunch - Premium Dry Fruits & Authentic Bihar Snacks"
-        description="Learn about VillageCrunch's journey to bring authentic Bihari dry fruits, makhana, and thekua to your doorstep. Quality, tradition, and customer satisfaction since inception."
-        keywords="VillageCrunch story, Bihar dry fruits company, authentic Indian snacks, premium quality makhana, traditional thekua makers"
+        description="Learn about VillageCrunch's journey to bring authentic Bihari dry fruits, makhana, thekua, and premium spices to your doorstep. Quality, tradition, and customer satisfaction since inception."
+        keywords="VillageCrunch story, Bihar dry fruits company, authentic Indian snacks, premium quality makhana, traditional thekua makers, premium spices, masala powder"
         url="/about"
         breadcrumbs={[
           { name: 'Home', url: '/' },
@@ -22,7 +22,7 @@ const About = () => {
           <h1 className="text-5xl font-bold mb-6">About VillageCrunch</h1>
           <p className="text-xl max-w-3xl mx-auto opacity-90">
             Bringing the authentic taste of Bihar to your doorstep with premium quality 
-            dry fruits, makhana, and traditional thekua.
+            dry fruits, makhana, traditional thekua, and premium quality spices.
           </p>
         </div>
       </div>
