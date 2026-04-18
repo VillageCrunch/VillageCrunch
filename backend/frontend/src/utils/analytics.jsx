@@ -189,8 +189,8 @@ const AnalyticsSetup = () => {
       document.head.appendChild(script2);
     }
 
-    // Load Facebook Pixel
-    if (FACEBOOK_PIXEL_ID && FACEBOOK_PIXEL_ID !== 'YOUR_PIXEL_ID') {
+    // Load Facebook Pixel only if it is not already present in the HTML head
+    if (!window.fbq && FACEBOOK_PIXEL_ID && FACEBOOK_PIXEL_ID !== 'YOUR_PIXEL_ID') {
       const script3 = document.createElement('script');
       script3.innerHTML = `
         !function(f,b,e,v,n,t,s)

@@ -4,6 +4,31 @@ const cors = require('cors');
 const helmet = require('helmet');
 const path = require('path');
 const connectDB = require('./config/db');
+const DEFAULT_PUBLIC_SITE_URL = 'https://villagecrunch.me';
+
+const isPrivateHost = (hostname) => {
+  return hostname === 'localhost'
+    || hostname === '127.0.0.1'
+    || hostname.endsWith('.local')
+    || /^10\./.test(hostname)
+    || /^192\.168\./.test(hostname)
+    || /^172\.(1[6-9]|2\d|3[0-1])\./.test(hostname);
+};
+
+const getPublicSiteUrl = () => {
+  const configuredUrl = process.env.PUBLIC_SITE_URL || process.env.SITE_URL || process.env.FRONTEND_URL || DEFAULT_PUBLIC_SITE_URL;
+
+  try {
+    const parsedUrl = new URL(configuredUrl);
+    if (isPrivateHost(parsedUrl.hostname)) {
+      return DEFAULT_PUBLIC_SITE_URL;
+    }
+
+    return parsedUrl.origin;
+  } catch (error) {
+    return DEFAULT_PUBLIC_SITE_URL;
+  }
+};
 
 // Initialize app
 const app = express();
@@ -75,7 +100,7 @@ app.get('/api/health', (req, res) => {
 app.get('/sitemap.xml', async (req, res) => {
   try {
     const Product = require('./models/Product');
-    const baseUrl = process.env.FRONTEND_URL || 'https://villagecrunch.me';
+    const baseUrl = getPublicSiteUrl();
     
     // Static pages
     const staticPages = [
@@ -89,14 +114,6 @@ app.get('/sitemap.xml', async (req, res) => {
 
     // Get all products
     const products = await Product.find({ isActive: true }, '_id name category updatedAt').lean();
-    
-    // Category pages
-    const categories = [...new Set(products.map(p => p.category).filter(Boolean))];
-    const categoryPages = categories.map(category => ({
-      url: `/products?category=${encodeURIComponent(category)}`,
-      priority: '0.8',
-      changefreq: 'weekly'
-    }));
 
     // Generate XML
     let sitemap = `<?xml version="1.0" encoding="UTF-8"?>
@@ -104,17 +121,6 @@ app.get('/sitemap.xml', async (req, res) => {
 
     // Add static pages
     staticPages.forEach(page => {
-      sitemap += `
-  <url>
-    <loc>${baseUrl}${page.url}</loc>
-    <lastmod>${new Date().toISOString().split('T')[0]}</lastmod>
-    <changefreq>${page.changefreq}</changefreq>
-    <priority>${page.priority}</priority>
-  </url>`;
-    });
-
-    // Add category pages
-    categoryPages.forEach(page => {
       sitemap += `
   <url>
     <loc>${baseUrl}${page.url}</loc>
@@ -159,7 +165,7 @@ app.get('/sitemap.xml', async (req, res) => {
 });
 
 app.get('/robots.txt', (req, res) => {
-  const baseUrl = process.env.FRONTEND_URL || 'https://villagecrunch.me';
+  const baseUrl = getPublicSiteUrl();
   
   const robotsTxt = `User-agent: *
 Allow: /
