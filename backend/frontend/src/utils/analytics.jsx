@@ -214,7 +214,7 @@ const AnalyticsSetup = () => {
       img.style.display = 'none';
       img.src = `https://www.facebook.com/tr?id=${FACEBOOK_PIXEL_ID}&ev=PageView&noscript=1`;
       noscript.appendChild(img);
-      document.head.appendChild(noscript);
+      document.body.appendChild(noscript);
     }
 
   }, []);
