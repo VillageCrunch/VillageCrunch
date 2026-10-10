@@ -21,7 +21,7 @@ router.get('/sitemap.xml', async (req, res) => {
     ];
 
     // Get all products
-    const products = await Product.find({ isActive: true }, '_id name updatedAt').lean();
+    const products = await Product.find({ isActive: { $ne: false } }, '_id name category updatedAt').lean();
     
     // Category pages
     const categories = [...new Set(products.map(p => p.category))];
